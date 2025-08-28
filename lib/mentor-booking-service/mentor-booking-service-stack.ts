@@ -9,6 +9,7 @@ import path from "path";
 
 interface MentorBookingServiceStackProps extends StackProps {
     mentorsTable: dynamodb.Table;
+    timeSlotsTable: dynamodb.Table;
 }
 
 export class MentorBookingServiceStack extends Stack {
@@ -17,6 +18,7 @@ export class MentorBookingServiceStack extends Stack {
 
         //tables
         const mentorsTable = props.mentorsTable;
+        const timeSlotsTable = props.timeSlotsTable;
 
         //functions
         const getAllMentorsFunction = new NodejsFunction(this, 'GetAllMentorsFunction', {
@@ -31,8 +33,23 @@ export class MentorBookingServiceStack extends Stack {
             },
         });
 
+        const getTimeSlotsByMentorFunction = new NodejsFunction(this, 'GetTimeSlotsByMentorFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 1024,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, './get-timeslots-by-mentor.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                MENTORS_TABLE_NAME: mentorsTable.tableName,
+            },
+        });
+
         //permissions
         mentorsTable.grantReadData(getAllMentorsFunction);
+        mentorsTable.grantReadData(getTimeSlotsByMentorFunction);
+        timeSlotsTable.grantReadData(getTimeSlotsByMentorFunction);
 
         //API Gateway
         const api = new apigateway.RestApi(this, 'MentorBookingApi', {
@@ -53,7 +70,7 @@ export class MentorBookingServiceStack extends Stack {
                   statusCode: '500',
                   selectionPattern: '5\\d{2}', // Match any 5xx errors
                   responseTemplates: {
-                    'application/json': '{"status": "error", "message": "Could not fetch mentors"}',
+                    'application/json': '{"status": "error", "message": "Internal Server Error"}',
                   },
                 },
             ],
@@ -61,6 +78,47 @@ export class MentorBookingServiceStack extends Stack {
         mentorsResource.addMethod('GET', getAllMentorsIntegration, {
             methodResponses: [
                 { statusCode: '200' },
+                { statusCode: '500' },
+            ],
+        });
+
+        const mentorIdResource = mentorsResource.addResource('{mentorId}');
+        const timeslotsResource = mentorIdResource.addResource('timeslots');
+        const getTimeSlotsByMentorIntegration = new apigateway.LambdaIntegration(getTimeSlotsByMentorFunction, {
+            integrationResponses: [
+                {
+                  statusCode: '200',
+                  responseTemplates: {
+                    'application/json': '{"status": "success", "data": $input.json("$")}',
+                  },
+                },
+                {
+                    statusCode: '400',
+                    selectionPattern: '4\\d{2}', // Match any 4xx errors
+                    responseTemplates: {
+                      'application/json': '{"status": "error", "message": "Mentor id is not provided or mentor with such id does not exist"}',
+                    },
+                  },
+                {
+                  statusCode: '500',
+                  selectionPattern: '5\\d{2}', // Match any 5xx errors
+                  responseTemplates: {
+                    'application/json': '{"status": "error", "message": "Internal Server Error"}',
+                  },
+                },
+            ],
+            requestTemplates: {
+                'application/json': JSON.stringify({
+                  pathParameters: {
+                    id: "$input.params('id')",
+                  },
+                }),
+            },
+        })
+        timeslotsResource.addMethod('GET', getTimeSlotsByMentorIntegration, {
+            methodResponses: [
+                { statusCode: '200' },
+                { statusCode: '400' },
                 { statusCode: '500' },
             ],
         });
