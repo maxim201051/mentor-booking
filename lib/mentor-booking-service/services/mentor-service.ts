@@ -1,4 +1,4 @@
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { MentorEntity } from "../entities/mentor-entity";
 
@@ -28,4 +28,22 @@ export class MentorService {
           throw new Error("Could not fetch mentors");
         }
     }
+
+    async isMentorExist(mentorId: string): Promise<boolean> {
+        try {
+          const command = new GetItemCommand({
+            TableName: this.mentorsTableName,
+            Key: {
+              id: { S: mentorId },
+            },
+          });
+    
+          const result = await this.dynamoDBClient.send(command);
+    
+          return result.Item ? true : false;
+        } catch (error) {
+          console.error('Error checking mentor existence:', error);
+          throw new Error('Failed to check mentor existence');
+        }
+      }
 }

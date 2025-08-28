@@ -13,4 +13,5 @@ new MentorBookingServiceStack(app, 'MentorBookingServiceStack', {
         region: process.env.REGION,
     },
     mentorsTable: dynamoDbStack.mentorsTable,
+    timeSlotsTable: dynamoDbStack.timeSlotsTable,
 });
