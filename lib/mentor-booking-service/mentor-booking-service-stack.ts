@@ -4,7 +4,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import path from "path";
+import * as path from "path";
 
 
 interface MentorBookingServiceStackProps extends StackProps {
