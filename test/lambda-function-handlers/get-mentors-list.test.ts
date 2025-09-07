@@ -1,40 +1,38 @@
 import { main } from "../../lib/mentor-booking-service/get-mentors-list";
 import { MentorService } from "../../lib/mentor-booking-service/services/mentor-service";
 
-// Mock the MentorService module
 jest.mock("../../lib/mentor-booking-service/services/mentor-service");
 
 describe("get-mentors-list handler", () => {
-  let mockGetAllMentors: jest.Mock;
+  let mockQueryMentorsWithFilters: jest.Mock;
 
   beforeEach(() => {
-    // Mock the `getAllMentors` method on the global `mentorService` instance
-    mockGetAllMentors = jest.fn();
+    mockQueryMentorsWithFilters = jest.fn();
     (MentorService as jest.Mock).mockImplementation(() => ({
-      getAllMentors: mockGetAllMentors,
+      queryMentorsWithFilters: mockQueryMentorsWithFilters,
     }));
   });
 
-  test("should return mentors", async () => {
-    // Mock the return value of `getAllMentors`
-    mockGetAllMentors.mockResolvedValue([
+  test("should return mentors when query parameters are empty", async () => {
+    mockQueryMentorsWithFilters.mockResolvedValue([
       {
         id: "mentor-1",
-        name: "John Doe",
+        fullName: "John Doe",
         email: "john.doe@example.com",
         skills: ["JavaScript"],
         experience: 5,
       },
     ]);
 
-    const response = await main();
+    const response = await main({ queryStringParameters: {} });
 
+    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({}); 
     expect(response).toEqual({
       statusCode: 200,
       body: JSON.stringify([
         {
           id: "mentor-1",
-          name: "John Doe",
+          fullName: "John Doe",
           email: "john.doe@example.com",
           skills: ["JavaScript"],
           experience: 5,
@@ -43,12 +41,40 @@ describe("get-mentors-list handler", () => {
     });
   });
 
+  test("should return mentors with filters", async () => {
+    mockQueryMentorsWithFilters.mockResolvedValue([
+      {
+        id: "mentor-2",
+        fullName: "Jane Smith",
+        email: "jane.smith@example.com",
+        skills: ["Python"],
+        experience: 7,
+      },
+    ]);
+
+    const response = await main({ queryStringParameters: { fullName: "Jane", experience: "7" } });
+
+    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({ fullName: "Jane", experience: "7" }); 
+    expect(response).toEqual({
+      statusCode: 200,
+      body: JSON.stringify([
+        {
+          id: "mentor-2",
+          fullName: "Jane Smith",
+          email: "jane.smith@example.com",
+          skills: ["Python"],
+          experience: 7,
+        },
+      ]),
+    });
+  });
+
   test("should handle errors", async () => {
-    // Mock `getAllMentors` to throw an error
-    mockGetAllMentors.mockRejectedValue(new Error("Error"));
+    mockQueryMentorsWithFilters.mockRejectedValue(new Error("Error"));
 
-    const response = await main();
+    const response = await main({ queryStringParameters: {} });
 
+    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({}); 
     expect(response).toEqual({
       statusCode: 500,
       body: JSON.stringify({ error: "Internal Server Error" }),
