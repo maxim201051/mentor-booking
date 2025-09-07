@@ -6,9 +6,10 @@ const mentorService = new MentorService(
     process.env.REGION 
 );
 
-export const main = async () => {
+export const main = async (event: any) => {
     try {
-        const mentors = await mentorService.getAllMentors();
+        const queryParams = event.queryStringParameters || {};
+        const mentors = await mentorService.queryMentorsWithFilters(queryParams);
         return {
             statusCode: 200,
             body: JSON.stringify(mentors),

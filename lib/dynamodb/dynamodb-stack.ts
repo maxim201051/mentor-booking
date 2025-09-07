@@ -14,57 +14,53 @@ export class DynamoDbStack extends Stack {
         this.bookingsTable = new dynamodb.Table(this, 'BookingsTable', {
           tableName: 'bookings',
           partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-          billingMode: dynamodb.BillingMode.PROVISIONED,
-          readCapacity: 5,
-          writeCapacity: 5,
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         });
     
         this.bookingsTable.addGlobalSecondaryIndex({
           indexName: 'StudentBookingsIndex',
           partitionKey: { name: 'studentId', type: dynamodb.AttributeType.STRING },
           projectionType: dynamodb.ProjectionType.ALL,
-          readCapacity: 5,
-          writeCapacity: 5,
         });
     
         this.bookingsTable.addGlobalSecondaryIndex({
           indexName: 'MentorBookingsIndex',
           partitionKey: { name: 'mentorId', type: dynamodb.AttributeType.STRING },
           projectionType: dynamodb.ProjectionType.ALL,
-          readCapacity: 5,
-          writeCapacity: 5,
         });
     
         this.mentorsTable = new dynamodb.Table(this, 'MentorsTable', {
           tableName: 'mentors',
           partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-          billingMode: dynamodb.BillingMode.PROVISIONED,
-          readCapacity: 5,
-          writeCapacity: 5,
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        });
+
+        this.mentorsTable.addGlobalSecondaryIndex({
+          indexName: 'FullNameIndex',
+          partitionKey: { name: 'fullName', type: dynamodb.AttributeType.STRING },
+        });
+
+        this.mentorsTable.addGlobalSecondaryIndex({
+          indexName: 'ExperienceIndex',
+          partitionKey: { name: 'experience', type: dynamodb.AttributeType.NUMBER },
         });
     
         this.studentsTable = new dynamodb.Table(this, 'StudentsTable', {
           tableName: 'students',
           partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-          billingMode: dynamodb.BillingMode.PROVISIONED,
-          readCapacity: 5,
-          writeCapacity: 5,
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         });
     
         this.timeSlotsTable = new dynamodb.Table(this, 'TimeslotsTable', {
           tableName: 'timeslots',
           partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-          billingMode: dynamodb.BillingMode.PROVISIONED,
-          readCapacity: 5,
-          writeCapacity: 5,
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         });
     
         this.timeSlotsTable.addGlobalSecondaryIndex({
           indexName: 'MentorTimeSlotsIndex',
           partitionKey: { name: 'mentorId', type: dynamodb.AttributeType.STRING },
           projectionType: dynamodb.ProjectionType.ALL,
-          readCapacity: 5,
-          writeCapacity: 5,
         });
     
         new CfnOutput(this, 'BookingsTableName', { value: this.bookingsTable.tableName });
