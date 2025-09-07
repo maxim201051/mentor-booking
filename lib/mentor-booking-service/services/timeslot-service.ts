@@ -31,5 +31,5 @@ export class TimeSlotService {
           console.error(`Error fetching time slots for mentor with ID ${mentorId}:`, error);
           throw new Error(`Could not fetch time slots for mentor with ID ${mentorId}`);
         }
-      }
+    }
 }

@@ -20,7 +20,7 @@ describe("MentorService", () => {
         Items: [
             {
             id: { S: "mentor-1" },
-            name: { S: "John Doe" },
+            fullName: { S: "John Doe" },
             email: { S: "john.doe@example.com" },
             skills: { S: ["JavaScript", "AWS"] },
             experience: { N: "5" },
@@ -29,11 +29,11 @@ describe("MentorService", () => {
         };
         (mockDynamoDBClient.send as jest.Mock).mockResolvedValue(mockResponse);
 
-        const mentors = await mentorService.getAllMentors();
+        const mentors = await mentorService.queryMentorsWithFilters({});
         expect(mentors).toEqual([
         {
             id: "mentor-1",
-            name: "John Doe",
+            fullName: "John Doe",
             email: "john.doe@example.com",
             skills: ["JavaScript", "AWS"],
             experience: 5,
@@ -44,7 +44,7 @@ describe("MentorService", () => {
     test("getAllMentors should handle DynamoDB error", async () => {
         (mockDynamoDBClient.send as jest.Mock).mockRejectedValue(new Error("DynamoDB error"));
 
-        await expect(mentorService.getAllMentors()).rejects.toThrow(
+        await expect(mentorService.queryMentorsWithFilters({})).rejects.toThrow(
         "Could not fetch mentors"
         );
     });
@@ -53,7 +53,7 @@ describe("MentorService", () => {
         const mockResponse = { Items: [] };
         (mockDynamoDBClient.send as jest.Mock).mockResolvedValue(mockResponse);
 
-        const mentors = await mentorService.getAllMentors();
+        const mentors = await mentorService.queryMentorsWithFilters({});
         expect(mentors).toEqual([]);
     });
 

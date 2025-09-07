@@ -23,7 +23,7 @@ export class MentorBookingServiceStack extends Stack {
         //functions
         const getAllMentorsFunction = new NodejsFunction(this, 'GetAllMentorsFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
-            memorySize: 1024,
+            memorySize: 512,
             timeout: Duration.seconds(5),
             handler: 'main',
             entry: path.join(__dirname, './get-mentors-list.ts'),
@@ -35,7 +35,7 @@ export class MentorBookingServiceStack extends Stack {
 
         const getTimeSlotsByMentorFunction = new NodejsFunction(this, 'GetTimeSlotsByMentorFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
-            memorySize: 1024,
+            memorySize: 512,
             timeout: Duration.seconds(5),
             handler: 'main',
             entry: path.join(__dirname, './get-timeslots-by-mentor.ts'),
