@@ -2,11 +2,13 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { mentors } from "./test-data/mentors";
 import { timeSlots } from "./test-data/timeslots";
+import { students } from "./test-data/students";
 
 const dynamoDbClient = new DynamoDBClient({ region: "eu-west-2" });
 
 const mentorsTableName = "mentors";
 const timeSlotsTableName = "timeslots";
+const studentsTableName = "students";
 
 const insertMentors = async () => {
   for (const mentor of mentors) {
@@ -34,9 +36,21 @@ const insertTimeSlots = async () => {
   }
 };
 
+const insertStudents = async () => {
+	for (const student of students) {
+		const command = new PutItemCommand({
+			TableName: studentsTableName,
+			Item: marshall(student),
+		});
+		await dynamoDbClient.send(command);
+		console.log(`Inserted student: ${student.id}`);
+	}
+}
+
 const insertTestData = async () => {
-  await insertMentors();
-  await insertTimeSlots();
+//   await insertMentors();
+//   await insertTimeSlots();
+  await insertStudents();
   console.log("Test data inserted successfully!");
 };
 
