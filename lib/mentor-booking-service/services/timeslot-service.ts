@@ -12,6 +12,14 @@ export class TimeSlotService {
         return await this.timeSlotRepository.getTimeslotsByMentor(mentorId);
     }
 
+    async getTimeSlotById(timeSlotId: string): Promise<TimeSlotEntity|null> {
+        return await this.timeSlotRepository.getTimeSlotById(timeSlotId);
+    }
+
+    async markTimeslotAsBooked(timeSlotId: string): Promise<void> {
+        await this.timeSlotRepository.updateTimeSlotIsBookedStatus(timeSlotId, true);
+    }
+
     async markTimeslotAsNonBooked(timeSlotId: string): Promise<void> {
         await this.timeSlotRepository.updateTimeSlotIsBookedStatus(timeSlotId, false);
     }

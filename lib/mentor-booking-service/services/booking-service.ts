@@ -8,6 +8,15 @@ export class BookingService {
         this.bookingRepository = new BookingRepository(bookingsTableName, region)
     }
 
+    async createBooking(booking: BookingEntity): Promise<BookingEntity> {
+        await this.bookingRepository.createBooking(booking);
+        return booking;
+    }
+
+    async getBookingsByStudentId(studentId: string): Promise<BookingEntity[]> {
+        return await this.bookingRepository.getBookingsByStudentId(studentId);
+    }
+
     async deleteBookingById(bookingId: string, studentId: string): Promise<BookingEntity> {
         const booking: BookingEntity|null = await this.bookingRepository.getBookingById(bookingId);
         if(!booking) {
