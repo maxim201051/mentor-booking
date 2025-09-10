@@ -48,6 +48,19 @@ export class MentorBookingServiceStack extends Stack {
             },
         });
 
+        const createBookingFunction = new NodejsFunction(this, 'CreateBookingFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 512,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, './create-booking.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                BOOKINGS_TABLE_NAME: bookingsTable.tableName,
+				TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                MENTORS_TABLE_NAME: mentorsTable.tableName,
+            },
+      	});
 
         const deleteBookingFunction = new NodejsFunction(this, 'deleteBookingFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
@@ -65,8 +78,11 @@ export class MentorBookingServiceStack extends Stack {
         //permissions
         mentorsTable.grantReadData(getAllMentorsFunction);
         mentorsTable.grantReadData(getTimeSlotsByMentorFunction);
+        mentorsTable.grantReadData(createBookingFunction);
         timeSlotsTable.grantReadData(getTimeSlotsByMentorFunction);
+        timeSlotsTable.grantReadWriteData(createBookingFunction);
         timeSlotsTable.grantReadWriteData(deleteBookingFunction);
+        bookingsTable.grantReadWriteData(createBookingFunction);
         bookingsTable.grantReadWriteData(deleteBookingFunction);
 
         //API Gateway
@@ -142,6 +158,9 @@ export class MentorBookingServiceStack extends Stack {
         });
 
         const createBookingResource = api.root.addResource('bookings');
+        const createBookingIntegration = new apigateway.LambdaIntegration(createBookingFunction);
+        createBookingResource.addMethod('POST', createBookingIntegration);
+
         const deleteBookingResource = createBookingResource.addResource('{bookingId}');
         const deleteBookingIntegration = new apigateway.LambdaIntegration(deleteBookingFunction);
         deleteBookingResource.addMethod('DELETE', deleteBookingIntegration);
