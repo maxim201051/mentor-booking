@@ -73,6 +73,13 @@ export const timeSlots: TimeSlotEntity[] = [
       endDate: new Date("2023-10-05T12:00:00.000Z"),
       isBooked: false,
     },
+    {
+      id: "929f2b1c-9dd7-4ca7-b01e-d8d8b0586cee",
+      mentorId: "a3b0c0e8-537e-4c5b-8025-06d8f6d7f20f",
+      startDate: new Date("2023-10-01T10:30:00.000Z"),
+      endDate: new Date("2023-10-01T11:30:00.000Z"),
+      isBooked: false,
+    },
     // Time slots for Alice Johnson
     {
       id: "104c8647-bdd1-48d8-9e83-3b8f18bda222",

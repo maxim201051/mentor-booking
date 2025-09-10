@@ -19,7 +19,7 @@ export const main = async (event: any) => {
             return {
               statusCode: 400,
               body: JSON.stringify({
-              error: 'bookingId is required in the path parameters',
+                error: 'bookingId is required in the path parameters',
               }),
             };
         };
@@ -27,7 +27,7 @@ export const main = async (event: any) => {
             return {
               statusCode: 401,
               body: JSON.stringify({
-              error: 'auth is required in the query parameters',
+                error: 'auth is required in the query parameters',
               }),
             };
         };
@@ -35,7 +35,9 @@ export const main = async (event: any) => {
         await timeSlotService.markTimeslotAsNonBooked(deletedBooking.timeslotId);
         return {
             statusCode: 200,
-            body: "Booking was successfully deleted"
+            body: JSON.stringify({
+                message: 'Booking was successfully deleted',
+            }),
         };
     } catch (error: any) {
        return {

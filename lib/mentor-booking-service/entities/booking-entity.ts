@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export interface BookingEntity {
-    id: string,
+    id: string|null,
     mentorId: string,
     studentId: string,
     timeslotId: string,
@@ -9,9 +9,9 @@ export interface BookingEntity {
 }
 
 export const BookingSchema = z.object({
-    id: z.string(),
-    mentorId: z.string(),
-    studentId: z.string(),
-    timeslotId: z.string(),
-    status: z.string(),
+    id: z.string().optional(),
+    mentorId: z.string().nonempty("mentorId is required"), 
+    studentId: z.string().nonempty("studentId is required"), 
+    timeslotId: z.string().nonempty("timeslotId is required"),
+    status: z.string().nonempty("status is required"),
 })
