@@ -1,9 +1,12 @@
+import { MentorRepository } from "./repositories/mentor-repository";
 import { MentorService } from "./services/mentor-service";
 
 
 const mentorService = new MentorService(
-    process.env.MENTORS_TABLE_NAME || '',
-    process.env.REGION 
+    new MentorRepository(
+        process.env.MENTORS_TABLE_NAME || '',
+        process.env.REGION
+    ),
 );
 
 export const main = async (event: any) => {

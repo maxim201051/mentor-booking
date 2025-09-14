@@ -1,14 +1,20 @@
+import { MentorRepository } from "./repositories/mentor-repository";
+import { TimeSlotRepository } from "./repositories/timeslot-repository";
 import { MentorService } from "./services/mentor-service";
 import { TimeSlotService } from "./services/timeslot-service"
 
 const timeSlotService = new TimeSlotService(
-    process.env.TIMESLOTS_TABLE_NAME || '',
-    process.env.REGION 
+    new TimeSlotRepository(
+        process.env.TIMESLOTS_TABLE_NAME || '',
+        process.env.REGION
+    ), 
 );
 
 const mentorService = new MentorService(
-    process.env.MENTORS_TABLE_NAME || '',
-    process.env.REGION 
+    new MentorRepository(
+        process.env.MENTORS_TABLE_NAME || '',
+        process.env.REGION
+    ),
 );
 
 export const main = async (event: any) => {
@@ -22,8 +28,8 @@ export const main = async (event: any) => {
             }),
           };
         }
-        const mentorExists = await mentorService.isMentorExist(mentorId);
-        if(!mentorExists) {
+        const mentor = await mentorService.getMentorById(mentorId);
+        if(!mentor) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({

@@ -15,4 +15,5 @@ new MentorBookingServiceStack(app, 'MentorBookingServiceStack', {
     mentorsTable: dynamoDbStack.mentorsTable,
     timeSlotsTable: dynamoDbStack.timeSlotsTable,
     bookingsTable: dynamoDbStack.bookingsTable,
+    studentsTable: dynamoDbStack.studentsTable,
 });

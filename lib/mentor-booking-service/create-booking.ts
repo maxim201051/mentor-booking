@@ -4,28 +4,38 @@ import { BookingService } from "./services/booking-service";
 import { MentorService } from "./services/mentor-service";
 import { TimeSlotService } from "./services/timeslot-service";
 import { uuidGenerator } from "./utils/uuid-generator";
+import { MentorEntity } from "./entities/mentor-entity";
+import { TimeSlotRepository } from "./repositories/timeslot-repository";
+import { BookingRepository } from "./repositories/booking-repository";
+import { MentorRepository } from "./repositories/mentor-repository";
 
 const mentorService = new MentorService(
-    process.env.MENTORS_TABLE_NAME || '',
-    process.env.REGION 
+    new MentorRepository(
+        process.env.MENTORS_TABLE_NAME || '',
+        process.env.REGION
+    ),
 );
 
 const timeSlotService = new TimeSlotService(
-    process.env.TIMESLOTS_TABLE_NAME || '',
-    process.env.REGION 
+    new TimeSlotRepository(
+        process.env.TIMESLOTS_TABLE_NAME || '',
+        process.env.REGION
+    ), 
 );
 
 const bookingService = new BookingService(
-    process.env.BOOKINGS_TABLE_NAME || '',
-    process.env.REGION 
+    new BookingRepository(
+        process.env.BOOKINGS_TABLE_NAME || '',
+        process.env.REGION
+    ),
 );
 
 export const main = async (event: any) => {
     try {
         const body = JSON.parse(event.body);
         const booking: BookingEntity = uuidGenerator.generateUuidForEntity(BookingSchema.parse(body));
-        const isMentorExists = await mentorService.isMentorExist(booking.mentorId);
-        if(!isMentorExists) {
+        const mentor: MentorEntity|null = await mentorService.getMentorById(booking.mentorId);
+        if(!mentor) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({
@@ -60,10 +70,10 @@ export const main = async (event: any) => {
                 booking: JSON.stringify(createdBooking),
             }),
         }
-    } catch (error: any) {
+    } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: error.message }),
+            body: JSON.stringify({ error: "Internal Server Error" }),
         };
     }
 }
