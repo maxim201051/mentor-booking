@@ -1,55 +1,19 @@
-import { DynamoDBClient, GetItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
-import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { MentorEntity } from "../entities/mentor-entity";
-import { dynamodbUtils } from "../utils/dynamodb-utils";
+import { MentorRepository } from "../repositories/mentor-repository";
 
 
 export class MentorService {
-    private readonly dynamoDBClient: DynamoDBClient;
-    private readonly mentorsTableName: string;
+    private readonly mentorRepository: MentorRepository;
 
-    constructor(mentorsTableName: string, region?: string) {
-        this.mentorsTableName = mentorsTableName;
-        this.dynamoDBClient = new DynamoDBClient({ region: region });
+    constructor(mentorRepository: MentorRepository) {
+        this.mentorRepository = mentorRepository;
     }
 
     async queryMentorsWithFilters(queryParams: any): Promise<MentorEntity[]> {
-        try {
-          const filters = new Map(Object.entries(queryParams));
-          const searchParams = dynamodbUtils.createMentorSearchParams(filters);
-          console.log(searchParams)
-          const mentorsScanCommand = new ScanCommand({
-            TableName: this.mentorsTableName,
-            ...searchParams,
-          });
-          console.log(mentorsScanCommand)
-
-          const mentorsResponse = await this.dynamoDBClient.send(mentorsScanCommand);
-          console.log(mentorsResponse)
-          const mentors = mentorsResponse.Items?.map(item => unmarshall(item) as MentorEntity) || [];
-    
-          return mentors;
-        } catch (error: any) {
-          console.error("Error fetching all mentors:", error);
-          throw new Error("Could not fetch mentors");
-        }
+		return await this.mentorRepository.queryMentorsWithFilters(queryParams);
     }
 
-    async isMentorExist(mentorId: string): Promise<boolean> {
-        try {
-          const command = new GetItemCommand({
-            TableName: this.mentorsTableName,
-            Key: {
-              id: { S: mentorId },
-            },
-          });
-    
-          const result = await this.dynamoDBClient.send(command);
-    
-          return result.Item ? true : false;
-        } catch (error) {
-          console.error('Error checking mentor existence:', error);
-          throw new Error('Failed to check mentor existence');
-        }
+    async getMentorById(mentorId: string): Promise<MentorEntity|null> {
+        return await this.mentorRepository.getMentorById(mentorId);
     }
 }

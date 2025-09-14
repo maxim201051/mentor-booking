@@ -12,14 +12,17 @@ export class TimeSlotRepository {
         this.dynamoDBClient = new DynamoDBClient({ region: region });
     }
 
-    async getTimeslotsByMentor(mentorId: string): Promise<TimeSlotEntity[]> {
+    async getUpcomingTimeslotsByMentor(mentorId: string): Promise<TimeSlotEntity[]> {
         try {
             const queryTimeSlotsCommand = new QueryCommand({
                 TableName: this.timeSlotsTableName,
                 IndexName: 'MentorTimeSlotsIndex',
                 KeyConditionExpression: 'mentorId = :mentorId',
+                FilterExpression: 'isBooked = :isBooked AND startDate > :currentDate',
                 ExpressionAttributeValues: {
                     ':mentorId': { S: mentorId },
+                    ':isBooked': { BOOL: false },
+                    ':currentDate' : { S: new Date().toISOString() }
                 },
             });
         
