@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export interface BookingEntity {
-    id: string|null,
+    id?: string,
     mentorId: string,
     studentId: string,
     timeslotId: string,

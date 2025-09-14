@@ -4,8 +4,8 @@ import { BookingRepository } from "../repositories/booking-repository";
 export class BookingService {
     private readonly bookingRepository: BookingRepository;
 
-    constructor(bookingsTableName: string, region?: string) {
-        this.bookingRepository = new BookingRepository(bookingsTableName, region)
+    constructor(bookingRepository: BookingRepository) {
+        this.bookingRepository = bookingRepository;
     }
 
     async createBooking(booking: BookingEntity): Promise<BookingEntity> {

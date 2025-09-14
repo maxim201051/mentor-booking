@@ -1,9 +1,21 @@
 import { BookingService } from "./services/booking-service";
 import { TimeSlotService } from "./services/timeslot-service";
+import { BookingEntity } from "./entities/booking-entity";
+import { BookingRepository } from "./repositories/booking-repository";
+import { TimeSlotRepository } from "./repositories/timeslot-repository";
+
+const timeSlotService = new TimeSlotService(
+    new TimeSlotRepository(
+        process.env.TIMESLOTS_TABLE_NAME || '',
+        process.env.REGION
+    ), 
+);
 
 const bookingService = new BookingService(
-    process.env.BOOKINGS_TABLE_NAME || '',
-    process.env.REGION 
+    new BookingRepository(
+        process.env.BOOKINGS_TABLE_NAME || '',
+        process.env.REGION
+    ),
 );
 
 const timeSlotService = new TimeSlotService(
@@ -14,7 +26,7 @@ const timeSlotService = new TimeSlotService(
 export const main = async (event: any) => {
     try {
         const bookingId = event.pathParameters?.bookingId;
-        const auth = event.queryStringParameters?.auth;
+        const auth = event.headers?.auth;
         if(!bookingId) {
             return {
               statusCode: 400,
@@ -39,10 +51,10 @@ export const main = async (event: any) => {
                 message: 'Booking was successfully deleted',
             }),
         };
-    } catch (error: any) {
+    } catch (error) {
        return {
         statusCode: 500,
-        body: JSON.stringify({ error: error.message }),
+        body: JSON.stringify({ error: "Internal Server Error" }),
        };
     }
 }
