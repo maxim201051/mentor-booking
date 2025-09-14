@@ -1,3 +1,4 @@
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { BookingEntity, BookingSchema } from "./entities/booking-entity";
 import { TimeSlotEntity } from "./entities/timeslot-entity";
 import { BookingService } from "./services/booking-service";
@@ -8,6 +9,9 @@ import { MentorEntity } from "./entities/mentor-entity";
 import { TimeSlotRepository } from "./repositories/timeslot-repository";
 import { BookingRepository } from "./repositories/booking-repository";
 import { MentorRepository } from "./repositories/mentor-repository";
+import { StudentEntity } from "./entities/student-entity";
+import { StudentService } from "./services/student-service";
+import { StudentRepository } from "./repositories/student-repository";
 
 const mentorService = new MentorService(
     new MentorRepository(
@@ -29,6 +33,17 @@ const bookingService = new BookingService(
         process.env.REGION
     ),
 );
+
+const studentService = new StudentService(
+    new StudentRepository(
+        process.env.STUDENTS_TABLE_NAME || '',
+        process.env.REGION
+    )
+);
+
+const sqsClient = new SQSClient({ 
+    region: process.env.REGION 
+});
 
 export const main = async (event: any) => {
     try {
@@ -52,7 +67,16 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        
+
+        const student: StudentEntity|null = await studentService.getStudentById(booking.studentId);
+        if(!student) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({
+                    error: 'Invalid student',
+                }),
+            };
+        }
         if(await hasOverlappingBookings(booking.studentId, timeSlot.startDate, timeSlot.endDate)) {
             return {
                 statusCode: 400,
@@ -63,6 +87,7 @@ export const main = async (event: any) => {
         }
         const createdBooking = await bookingService.createBooking(booking);
         await timeSlotService.markTimeslotAsBooked(timeSlot.id);
+        await sendBookingCreatedEvent(createdBooking, student, mentor, timeSlot);
         return {
             statusCode: 201,
             body: JSON.stringify({
@@ -93,4 +118,24 @@ const hasOverlappingBookings = async (studentId: string, startDate:Date, endDate
         }
     }
     return false;
+}
+
+const sendBookingCreatedEvent = async(booking: BookingEntity, student: StudentEntity, mentor: MentorEntity, timeSlot: TimeSlotEntity): Promise<void> => {
+    const bookingEvent = {
+        type: "booking.created",
+        bookingId: booking.id,
+        studentEmail: student.email,
+        mentorEmail: mentor.email,
+        studentFullName: student.fullName,
+        mentorFullName: mentor.fullName,
+        startDate: timeSlot.startDate,
+        endDate: timeSlot.endDate
+    };
+
+    const command = new SendMessageCommand({
+        QueueUrl: process.env.NOTIFICATION_QUEUE_URL,
+        MessageBody: JSON.stringify(bookingEvent),
+    });
+  
+    await sqsClient.send(command);
 }
