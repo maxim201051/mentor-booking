@@ -17,16 +17,12 @@ export class BookingService {
         return await this.bookingRepository.getBookingsByStudentId(studentId);
     }
 
-    async deleteBookingById(bookingId: string, studentId: string): Promise<BookingEntity> {
-        const booking: BookingEntity|null = await this.bookingRepository.getBookingById(bookingId);
-        if(!booking) {
-            throw new Error('Booking with such id does not exist')
-        }
-        if(studentId !== booking.studentId) {
-            throw new Error('Access denied. Cannot delete booking owned by another student')
-        }
+    async getBookingById(bookingId: string): Promise<BookingEntity|null> {
+        return await this.bookingRepository.getBookingById(bookingId);
+    }
+
+    async deleteBookingById(bookingId: string): Promise<void> {
         await this.bookingRepository.deleteBookingById(bookingId);
-        return booking;
     }
     
 }
