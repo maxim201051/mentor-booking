@@ -7,9 +7,9 @@ export class BookingRepository {
     private readonly dynamoDBClient: DynamoDBClient;
     private readonly bookingsTableName: string;
 
-    constructor(bookingsTableName: string, region?: string) {
+    constructor(bookingsTableName: string, dynamoDBClient: DynamoDBClient) {
         this.bookingsTableName = bookingsTableName;
-        this.dynamoDBClient = new DynamoDBClient({ region: region });
+        this.dynamoDBClient = dynamoDBClient;
     }
 
     async getBookingById(bookingId: string): Promise<BookingEntity|null> {

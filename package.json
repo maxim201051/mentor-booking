@@ -31,6 +31,7 @@
     "constructs": "^10.0.0",
     "dotenv": "^17.2.1",
     "handlebars": "^4.7.8",
+    "tsyringe": "^4.10.0",
     "zod": "^4.1.4"
   }
 }

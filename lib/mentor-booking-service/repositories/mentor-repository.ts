@@ -7,9 +7,9 @@ export class MentorRepository {
     private readonly dynamoDBClient: DynamoDBClient;
     private readonly mentorsTableName: string;
 
-    constructor(mentorsTableName: string, region?: string) {
+    constructor(mentorsTableName: string, dynamoDBClient: DynamoDBClient) {
         this.mentorsTableName = mentorsTableName;
-        this.dynamoDBClient = new DynamoDBClient({ region: region });
+        this.dynamoDBClient = dynamoDBClient;
     }
 
     async getMentorById(mentorId: string): Promise<MentorEntity|null> {
