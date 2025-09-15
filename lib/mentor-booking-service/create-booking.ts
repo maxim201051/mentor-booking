@@ -12,32 +12,37 @@ import { MentorRepository } from "./repositories/mentor-repository";
 import { StudentEntity } from "./entities/student-entity";
 import { StudentService } from "./services/student-service";
 import { StudentRepository } from "./repositories/student-repository";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+const dynamoDBClient = new DynamoDBClient({ 
+    region: process.env.REGION 
+});
 
 const mentorService = new MentorService(
     new MentorRepository(
         process.env.MENTORS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ),
 );
 
 const timeSlotService = new TimeSlotService(
     new TimeSlotRepository(
         process.env.TIMESLOTS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ), 
 );
 
 const bookingService = new BookingService(
     new BookingRepository(
         process.env.BOOKINGS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ),
 );
 
 const studentService = new StudentService(
     new StudentRepository(
         process.env.STUDENTS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     )
 );
 
@@ -103,7 +108,7 @@ export const main = async (event: any) => {
     }
 }
 
-const hasOverlappingBookings = async (studentId: string, startDate:Date, endDate: Date): Promise<boolean> => {
+const hasOverlappingBookings = async (studentId: string, startDate:Date, endDate: Date): Promise<boolean> => {//move to service
     const studentBookings: BookingEntity[] = await bookingService.getBookingsByStudentId(studentId);
     let studentBookingsTimeSlots: TimeSlotEntity[] = [];
     for (const studentBooking of studentBookings) {

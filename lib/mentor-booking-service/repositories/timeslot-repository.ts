@@ -7,9 +7,9 @@ export class TimeSlotRepository {
     private readonly dynamoDBClient: DynamoDBClient;
     private readonly timeSlotsTableName: string;
 
-    constructor(timeSlotsTableName: string, region?: string) {
+    constructor(timeSlotsTableName: string, dynamoDBClient: DynamoDBClient) {
         this.timeSlotsTableName = timeSlotsTableName;
-        this.dynamoDBClient = new DynamoDBClient({ region: region });
+        this.dynamoDBClient = dynamoDBClient;
     }
 
     async getUpcomingTimeslotsByMentor(mentorId: string): Promise<TimeSlotEntity[]> {

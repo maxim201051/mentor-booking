@@ -1,18 +1,26 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { MentorRepository } from "./repositories/mentor-repository";
 import { MentorService } from "./services/mentor-service";
 
+const dynamoDBClient = new DynamoDBClient({ 
+    region: process.env.REGION 
+});
 
 const mentorService = new MentorService(
     new MentorRepository(
         process.env.MENTORS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ),
 );
 
 export const main = async (event: any) => {
+    return await handleGetMentorsList(event, { mentorService })
+}
+
+export const handleGetMentorsList = async (event: any, dependencies: { mentorService: MentorService; }) => {
     try {
         const queryParams = event.queryStringParameters || {};
-        const mentors = await mentorService.queryMentorsWithFilters(queryParams);
+        const mentors = await dependencies.mentorService.queryMentorsWithFilters(queryParams);
         return {
             statusCode: 200,
             body: JSON.stringify(mentors),

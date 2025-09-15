@@ -1,7 +1,5 @@
 
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import * as fs from "fs";
-import * as path from "path";
 import Handlebars from "handlebars";
 import { BookingNotificationEntity } from "../entities/booking-notification-entity";
 import { bookingCancelledMentorEmailTemplate, bookingCancelledStudentEmailTemplate, bookingCreatedMentorEmailTemplate, bookingCreatedStudentEmailTemplate } from "../email/email-templates-container";
@@ -71,15 +69,6 @@ export class EmailNotificationService {
             },
             Source: sender,
         };
-    }
-
-    private getEmailBodyFromTemplate(templatePath: string) {
-        const files = fs.readdirSync("/var/task");
-        console.log("Files in /var/task:", files);
-        const templateFilePath = path.resolve(__dirname, ".", templatePath);        
-        console.log(templateFilePath);
-        const templateContent = fs.readFileSync(templateFilePath, "utf-8");
-        return Handlebars.compile(templateContent);
     }
 
     private async sendEmail(emailParams: any) {
