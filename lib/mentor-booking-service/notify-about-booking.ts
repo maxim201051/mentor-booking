@@ -7,25 +7,29 @@ import { MentorRepository } from "./repositories/mentor-repository";
 import { TimeSlotRepository } from "./repositories/timeslot-repository";
 import { BookingNotificationEntity, BookingNotificationEntitySchema } from "./entities/booking-notification-entity";
 import { SESClient } from "@aws-sdk/client-ses";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
+const dynamoDBClient = new DynamoDBClient({ 
+    region: process.env.REGION 
+});
 
 const mentorService = new MentorService(
     new MentorRepository(
         process.env.MENTORS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ),
 );
 const timeSlotService = new TimeSlotService(
     new TimeSlotRepository(
         process.env.TIMESLOTS_TABLE_NAME || '',
-        process.env.REGION
+        dynamoDBClient,
     ), 
 );
 
 const studentService = new StudentService(
     new StudentRepository(
         process.env.STUDENTS_TABLE_NAME || '',
-        process.env.REGION 
+        dynamoDBClient,
     ),
 )
 

@@ -6,9 +6,9 @@ export class StudentRepository {
     private readonly dynamoDBClient: DynamoDBClient;
     private readonly studentsTableName: string;
 
-    constructor(studentsTableName: string, region?: string) {
+    constructor(studentsTableName: string, dynamoDBClient: DynamoDBClient) {
         this.studentsTableName = studentsTableName;
-        this.dynamoDBClient = new DynamoDBClient({ region: region });
+        this.dynamoDBClient = dynamoDBClient;
     }
 
     async getStudentById(studentId: string): Promise<StudentEntity|null> {
