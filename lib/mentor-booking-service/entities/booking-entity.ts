@@ -1,17 +1,12 @@
 import { z } from "zod";
-
-export interface BookingEntity {
-    id?: string,
-    mentorId: string,
-    studentId: string,
-    timeslotId: string,
-    status: string,
-}
+import { v4 as uuidv4 } from 'uuid';
 
 export const BookingSchema = z.object({
-    id: z.string().optional(),
+    id: z.string().default(() => uuidv4()),
     mentorId: z.string().nonempty("mentorId is required"), 
     studentId: z.string().nonempty("studentId is required"), 
     timeslotId: z.string().nonempty("timeslotId is required"),
-    status: z.string().nonempty("status is required"),
-})
+    status: z.string().default("created"),
+});
+
+export type BookingEntity =  z.infer<typeof BookingSchema>;

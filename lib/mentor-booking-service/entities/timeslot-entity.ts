@@ -1,17 +1,15 @@
 import z from "zod";
-
-export interface TimeSlotEntity {
-    id: string,
-    mentorId: string,
-    startDate: Date,
-    endDate: Date,
-    isBooked: boolean,
-}
+import { v4 as uuidv4 } from 'uuid';
 
 export const TimeSlotSchema = z.object({
-    id: z.string(),
-    mentorId: z.string(),
-    startDate: z.string().transform((date) => new Date(date)),
-    endDate: z.string().transform((date) => new Date(date)),
-    isBooked: z.boolean(),
-})
+    id: z.string().default(() => uuidv4()),
+    mentorId: z.string().nonempty("mentorId is required"),
+    startDate: z.string().nonempty("mentorId is required").transform((date) => new Date(date)),
+    endDate: z.string().nonempty("mentorId is required").transform((date) => new Date(date)),
+    isBooked: z.boolean().optional().default(false),
+}).refine(
+    (data) => new Date(data.endDate) > new Date(data.startDate), 
+    { message: "endDate must be after startDate", path: ["endDate"] }
+);
+
+export type TimeSlotEntity = z.infer<typeof TimeSlotSchema>;
