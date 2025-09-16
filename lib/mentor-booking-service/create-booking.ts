@@ -4,7 +4,6 @@ import { TimeSlotEntity } from "./entities/timeslot-entity";
 import { BookingService } from "./services/booking-service";
 import { MentorService } from "./services/mentor-service";
 import { TimeSlotService } from "./services/timeslot-service";
-import { uuidGenerator } from "./utils/uuid-generator";
 import { MentorEntity } from "./entities/mentor-entity";
 import { TimeSlotRepository } from "./repositories/timeslot-repository";
 import { BookingRepository } from "./repositories/booking-repository";
@@ -37,6 +36,7 @@ const bookingService = new BookingService(
         process.env.BOOKINGS_TABLE_NAME || '',
         dynamoDBClient,
     ),
+    timeSlotService,
 );
 
 const studentService = new StudentService(
@@ -53,7 +53,7 @@ const sqsClient = new SQSClient({
 export const main = async (event: any) => {
     try {
         const body = JSON.parse(event.body);
-        const booking: BookingEntity = uuidGenerator.generateUuidForEntity(BookingSchema.parse(body));
+        const booking: BookingEntity = BookingSchema.parse(body);
         const mentor: MentorEntity|null = await mentorService.getMentorById(booking.mentorId);
         if(!mentor) {
             return {
@@ -82,7 +82,7 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        if(await hasOverlappingBookings(booking.studentId, timeSlot.startDate, timeSlot.endDate)) {
+        if(await bookingService.isStudentHasOverlappingBookings(booking.studentId, timeSlot.startDate, timeSlot.endDate)) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({
@@ -106,23 +106,6 @@ export const main = async (event: any) => {
             body: JSON.stringify({ error: "Internal Server Error" }),
         };
     }
-}
-
-const hasOverlappingBookings = async (studentId: string, startDate:Date, endDate: Date): Promise<boolean> => {//move to service
-    const studentBookings: BookingEntity[] = await bookingService.getBookingsByStudentId(studentId);
-    let studentBookingsTimeSlots: TimeSlotEntity[] = [];
-    for (const studentBooking of studentBookings) {
-        const timeSlot = await timeSlotService.getTimeSlotById(studentBooking.timeslotId);
-        if (timeSlot) {
-            studentBookingsTimeSlots.push(timeSlot);
-        }
-    }
-    for (const timeslot of studentBookingsTimeSlots) {
-        if (timeslot.startDate <= endDate && timeslot.endDate >= startDate) {
-            return true;
-        }
-    }
-    return false;
 }
 
 const sendBookingCreatedEvent = async(booking: BookingEntity, student: StudentEntity, mentor: MentorEntity, timeSlot: TimeSlotEntity): Promise<void> => {
