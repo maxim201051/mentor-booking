@@ -1,7 +1,7 @@
-import { DynamoDBClient, GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { TimeSlotEntity, TimeSlotSchema } from "../entities/timeslot-entity";
-import { unmarshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 export class TimeSlotRepository {
     private readonly dynamoDBClient: DynamoDBClient;
@@ -32,8 +32,8 @@ export class TimeSlotRepository {
         
             return timeSlots;
         } catch (error: any) {
-          console.error(`Error fetching time slots for mentor with ID ${mentorId}:`, error);
-          throw new Error(`Could not fetch time slots for mentor with ID ${mentorId}`);
+          console.error(`Error fetching upcoming time slots for mentor with ID ${mentorId}:`, error);
+          throw new Error(`Could not fetch upcoming time slots for mentor with ID ${mentorId}`);
         }
     }
 
@@ -75,4 +75,47 @@ export class TimeSlotRepository {
             throw new Error(`Could not update isBooked status of time slot ${timeslotId}`);
         }
     }
+
+    async getOverlappingTimeSlotsByMentor(mentorId: string, startDate: Date, endDate: Date): Promise<TimeSlotEntity[]> {
+        try {
+            const queryTimeSlotsCommand = new QueryCommand({
+                TableName: this.timeSlotsTableName,
+                IndexName: 'MentorTimeSlotsIndex',
+                KeyConditionExpression: 'mentorId = :mentorId',
+                FilterExpression: 'startDate <= :endDate AND endDate >= :startDate',
+                ExpressionAttributeValues: {
+                    ':mentorId': { S: mentorId },
+                    ':startDate' : { S: startDate.toISOString() },
+                    ':endDate' : { S: endDate.toISOString() }
+                },
+            });
+        
+            const timeSlotsResponse = await this.dynamoDBClient.send(queryTimeSlotsCommand);
+        
+            const timeSlots = timeSlotsResponse.Items?.map((item) => unmarshall(item) as TimeSlotEntity) || [];
+        
+            return timeSlots;
+        } catch (error: any) {
+          console.error(`Error fetching overlapping time slots for mentor with ID ${mentorId}:`, error);
+          throw new Error(`Could not fetch overlapping time slots for mentor with ID ${mentorId}`);
+        }
+    }
+
+    async createTimeslot(timeslot: TimeSlotEntity): Promise<void> {
+        try {
+            const command = new PutItemCommand({
+                TableName: this.timeSlotsTableName,
+                Item: marshall({
+                    ...timeslot,
+                    startDate: timeslot.startDate.toISOString(),
+                    endDate: timeslot.endDate.toISOString(),
+                  }),
+            });
+            await this.dynamoDBClient.send(command);
+        } catch (error) {
+            console.error('Error creating timeslot:', error);
+            throw new Error('Failed to create timeslot');
+        }
+    }
+
 }
