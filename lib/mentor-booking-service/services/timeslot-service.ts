@@ -24,4 +24,13 @@ export class TimeSlotService {
         await this.timeSlotRepository.updateTimeSlotIsBookedStatus(timeSlotId, false);
     }
 
+    async getOverlappingTimeSlotsByMentor(mentorId: string, startDate: Date, endDate: Date): Promise<TimeSlotEntity[]> {
+        return await this.timeSlotRepository.getOverlappingTimeSlotsByMentor(mentorId, startDate, endDate);
+    }
+
+    async createTimeslot(timeslot: TimeSlotEntity): Promise<TimeSlotEntity> {
+        await this.timeSlotRepository.createTimeslot(timeslot);
+        return timeslot;
+    }
+
 }
