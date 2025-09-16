@@ -36,6 +36,7 @@ const bookingService = new BookingService(
         process.env.BOOKINGS_TABLE_NAME || '',
         dynamoDBClient,
     ),
+    timeSlotService,
 );
 
 const studentService = new StudentService(
