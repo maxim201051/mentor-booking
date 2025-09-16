@@ -1,17 +1,32 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { MentorRepository } from "./repositories/mentor-repository";
+import { TimeSlotRepository } from "./repositories/timeslot-repository";
 import { MentorService } from "./services/mentor-service";
 import { TimeSlotService } from "./services/timeslot-service"
 
+const dynamoDBClient = new DynamoDBClient({ 
+    region: process.env.REGION 
+});
+
 const timeSlotService = new TimeSlotService(
-    process.env.TIMESLOTS_TABLE_NAME || '',
-    process.env.REGION 
+    new TimeSlotRepository(
+        process.env.TIMESLOTS_TABLE_NAME || '',
+        dynamoDBClient,
+    ), 
 );
 
 const mentorService = new MentorService(
-    process.env.MENTORS_TABLE_NAME || '',
-    process.env.REGION 
+    new MentorRepository(
+        process.env.MENTORS_TABLE_NAME || '',
+        dynamoDBClient,
+    ),
 );
 
 export const main = async (event: any) => {
+    return await handleGetTimeslotsByMentor(event, { mentorService, timeSlotService })
+}
+
+const handleGetTimeslotsByMentor = async (event: any, dependencies: { mentorService: MentorService; timeSlotService: TimeSlotService; }) => {
     try {
         const mentorId = event.pathParameters?.mentorId;
         if(!mentorId) {
@@ -22,8 +37,8 @@ export const main = async (event: any) => {
             }),
           };
         }
-        const mentorExists = await mentorService.isMentorExist(mentorId);
-        if(!mentorExists) {
+        const mentor = await dependencies.mentorService.getMentorById(mentorId);
+        if(!mentor) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({
@@ -31,7 +46,7 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        const mentors = await timeSlotService.getTimeslotsByMentor(mentorId);
+        const mentors = await dependencies.timeSlotService.getTimeslotsByMentor(mentorId);
         return {
             statusCode: 200,
             body: JSON.stringify(mentors),
@@ -43,5 +58,4 @@ export const main = async (event: any) => {
             body: JSON.stringify({ error: 'Internal Server Error' }),
         };
     }
-    
 }

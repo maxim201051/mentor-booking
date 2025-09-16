@@ -9,9 +9,9 @@ export interface TimeSlotEntity {
 }
 
 export const TimeSlotSchema = z.object({
-    is: z.string(),
+    id: z.string(),
     mentorId: z.string(),
-    startDate: z.date(),
-    endDate: z.date(),
+    startDate: z.string().transform((date) => new Date(date)),
+    endDate: z.string().transform((date) => new Date(date)),
     isBooked: z.boolean(),
 })
