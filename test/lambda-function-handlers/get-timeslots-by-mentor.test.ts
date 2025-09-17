@@ -1,6 +1,6 @@
-import { main } from "../../lib/mentor-booking-service/get-timeslots-by-mentor";
-import { MentorService } from "../../lib/mentor-booking-service/services/mentor-service";
-import { TimeSlotService } from "../../lib/mentor-booking-service/services/timeslot-service";
+import { main } from "../../src/handlers/get-timeslots-by-mentor";
+import { MentorService } from "../../src/services/mentor-service";
+import { TimeSlotService } from "../../src/services/timeslot-service";
 
 jest.mock("../../lib/mentor-booking-service/services/mentor-service");
 jest.mock("../../lib/mentor-booking-service/services/timeslot-service");

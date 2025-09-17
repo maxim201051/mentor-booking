@@ -1,5 +1,5 @@
-import { MentorRepository } from "../../lib/mentor-booking-service/repositories/mentor-repository";
-import { dynamodbUtils } from "../../lib/mentor-booking-service/utils/dynamodb-utils";
+import { MentorRepository } from "../../src/repositories/mentor-repository";
+import { dynamodbUtils } from "../../src/utils/dynamodb-utils";
 
 jest.mock("@aws-sdk/client-dynamodb", () => {
     const actual = jest.requireActual("@aws-sdk/client-dynamodb");

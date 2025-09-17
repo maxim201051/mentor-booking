@@ -39,7 +39,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './get-mentors-list.ts'),
+            entry: path.join(__dirname, '../src/handlers/get-mentors-list.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 MENTORS_TABLE_NAME: mentorsTable.tableName,
@@ -51,7 +51,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './get-timeslots-by-mentor.ts'),
+            entry: path.join(__dirname, '../src/handlers/get-timeslots-by-mentor.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
@@ -64,7 +64,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './create-timeslot.ts'),
+            entry: path.join(__dirname, '../src/handlers/create-timeslot.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
@@ -77,7 +77,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './create-booking.ts'),
+            entry: path.join(__dirname, '../src/handlers/create-booking.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 BOOKINGS_TABLE_NAME: bookingsTable.tableName,
@@ -93,7 +93,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './delete-booking.ts'),
+            entry: path.join(__dirname, '../src/handlers/delete-booking.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 BOOKINGS_TABLE_NAME: bookingsTable.tableName,
@@ -109,7 +109,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './get-bookings-by-mentor.ts'),
+            entry: path.join(__dirname, '../src/handlers/get-bookings-by-mentor.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 BOOKINGS_TABLE_NAME: bookingsTable.tableName,
@@ -123,7 +123,7 @@ export class MentorBookingServiceStack extends Stack {
             memorySize: 256,
             timeout: Duration.seconds(5),
             handler: 'main',
-            entry: path.join(__dirname, './notify-about-booking.ts'),
+            entry: path.join(__dirname, '../src/handlers/notify-about-booking.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
                 TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
