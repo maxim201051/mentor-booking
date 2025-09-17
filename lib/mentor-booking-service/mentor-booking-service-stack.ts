@@ -104,7 +104,21 @@ export class MentorBookingServiceStack extends Stack {
             },
       	});
 
-		  const notifyAboutBookingFunction = new NodejsFunction(this, 'notifyAboutBookingFunction', {
+        const getBookingsMentorFunction = new NodejsFunction(this, 'GetBookingsMentorFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, './get-bookings-by-mentor.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                BOOKINGS_TABLE_NAME: bookingsTable.tableName,
+				TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                MENTORS_TABLE_NAME: mentorsTable.tableName,
+            },
+      	});
+
+        const notifyAboutBookingFunction = new NodejsFunction(this, 'notifyAboutBookingFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
             memorySize: 256,
             timeout: Duration.seconds(5),
@@ -112,9 +126,9 @@ export class MentorBookingServiceStack extends Stack {
             entry: path.join(__dirname, './notify-about-booking.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
-				TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
                 MENTORS_TABLE_NAME: mentorsTable.tableName,
-				STUDENTS_TABLE_NAME: studentsTable.tableName,
+                STUDENTS_TABLE_NAME: studentsTable.tableName,
             },
       	});
 
@@ -130,12 +144,15 @@ export class MentorBookingServiceStack extends Stack {
         mentorsTable.grantReadData(createBookingFunction);
         mentorsTable.grantReadData(deleteBookingFunction);
         mentorsTable.grantReadData(createTimeSlotFunction);
+        mentorsTable.grantReadData(getBookingsMentorFunction);
         timeSlotsTable.grantReadData(getTimeSlotsByMentorFunction);
+        timeSlotsTable.grantReadData(getBookingsMentorFunction);
         timeSlotsTable.grantReadWriteData(createBookingFunction);
         timeSlotsTable.grantReadWriteData(deleteBookingFunction);
         timeSlotsTable.grantReadWriteData(createTimeSlotFunction);
         bookingsTable.grantReadWriteData(createBookingFunction);
         bookingsTable.grantReadWriteData(deleteBookingFunction);
+        bookingsTable.grantReadData(getBookingsMentorFunction);
         studentsTable.grantReadData(createBookingFunction);
         studentsTable.grantReadData(deleteBookingFunction);
 		notificationQueue.grantSendMessages(createBookingFunction);
@@ -152,11 +169,16 @@ export class MentorBookingServiceStack extends Stack {
         mentorsResource.addMethod('GET', getAllMentorsIntegration);
 
         const mentorIdResource = mentorsResource.addResource('{mentorId}');
+
         const timeslotsResource = mentorIdResource.addResource('timeslots');
         const getTimeSlotsByMentorIntegration = new apigateway.LambdaIntegration(getTimeSlotsByMentorFunction);
         const createTimeSlotIntegration = new apigateway.LambdaIntegration(createTimeSlotFunction)
         timeslotsResource.addMethod('GET', getTimeSlotsByMentorIntegration);
         timeslotsResource.addMethod('POST', createTimeSlotIntegration);
+
+        const getBookingsResource = mentorIdResource.addResource('bookings');
+        const getBookingsMentorIntegration = new apigateway.LambdaIntegration(getBookingsMentorFunction);
+        getBookingsResource.addMethod('GET', getBookingsMentorIntegration);
 
         const createBookingResource = api.root.addResource('bookings');
         const createBookingIntegration = new apigateway.LambdaIntegration(createBookingFunction);

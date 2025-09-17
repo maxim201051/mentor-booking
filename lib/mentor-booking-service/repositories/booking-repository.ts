@@ -2,6 +2,7 @@ import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand } from "@a
 import { BookingEntity } from "../entities/booking-entity";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { dynamodbUtils } from "../utils/dynamodb-utils";
 
 export class BookingRepository {
     private readonly dynamoDBClient: DynamoDBClient;
@@ -72,8 +73,28 @@ export class BookingRepository {
             const bookings = bookingsResponse.Items?.map((item) => unmarshall(item) as BookingEntity) || [];
             return bookings;
         } catch (error) {
-            console.error(`Error querying overlapping bookings for student ${studentId}:`, error);
-            throw new Error(`Failed to query overlapping bookings for student ${studentId}`);
+            console.error(`Error querying bookings for student ${studentId}:`, error);
+            throw new Error(`Failed to query bookings for student ${studentId}`);
         }
     }
+
+    async getBookingsByMentorIdWithFilters(mentorId: string): Promise<BookingEntity[]> {
+        try {
+            const command = new QueryCommand({
+                TableName: this.bookingsTableName,
+                IndexName: "MentorBookingsIndex",
+                KeyConditionExpression: "mentorId = :mentorId",
+                ExpressionAttributeValues: {
+                    ":mentorId": { S: mentorId },
+                },
+            });
+            const bookingsResponse = await this.dynamoDBClient.send(command);
+            const bookings = bookingsResponse.Items?.map((item) => unmarshall(item) as BookingEntity) || [];
+            return bookings;
+        } catch (error) {
+            console.error(`Error querying bookings for mentor ${mentorId}:`, error);
+            throw new Error(`Failed to query bookings for mentor ${mentorId}`);
+        }
+    }
+
 }

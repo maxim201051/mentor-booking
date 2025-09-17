@@ -45,4 +45,25 @@ export class BookingService {
         }
         return false;
     }
+
+    async getBookingsByMentorIdWithFilters(mentorId: string, queryParams: any): Promise<BookingEntity[]> {
+        const bookings: BookingEntity[] = await this.bookingRepository.getBookingsByMentorIdWithFilters(mentorId);
+        if(queryParams.type === "upcoming") {
+            for(const booking of bookings) {
+                const timeslot: TimeSlotEntity|null = await this.timeslotService.getTimeSlotById(booking.timeslotId);
+                if(!timeslot || timeslot.startDate < new Date()) {
+                    bookings.splice(bookings.indexOf(booking), 1);
+                }
+            }
+        }
+        if(queryParams.type === "past") {
+            for(const booking of bookings) {
+                const timeslot: TimeSlotEntity|null = await this.timeslotService.getTimeSlotById(booking.timeslotId);
+                if(!timeslot || timeslot.endDate > new Date()) {
+                    bookings.splice(bookings.indexOf(booking), 1);
+                }
+            }
+        }
+        return bookings;
+    }
 }
