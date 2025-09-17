@@ -1,16 +1,16 @@
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { BookingService } from "./services/booking-service";
-import { TimeSlotService } from "./services/timeslot-service";
-import { BookingEntity } from "./entities/booking-entity";
-import { BookingRepository } from "./repositories/booking-repository";
-import { TimeSlotRepository } from "./repositories/timeslot-repository";
-import { MentorEntity } from "./entities/mentor-entity";
-import { StudentEntity } from "./entities/student-entity";
-import { TimeSlotEntity } from "./entities/timeslot-entity";
-import { MentorRepository } from "./repositories/mentor-repository";
-import { StudentRepository } from "./repositories/student-repository";
-import { MentorService } from "./services/mentor-service";
-import { StudentService } from "./services/student-service";
+import { BookingService } from "../services/booking-service";
+import { TimeSlotService } from "../services/timeslot-service";
+import { BookingEntity } from "../entities/booking-entity";
+import { BookingRepository } from "../repositories/booking-repository";
+import { TimeSlotRepository } from "../repositories/timeslot-repository";
+import { MentorEntity } from "../entities/mentor-entity";
+import { StudentEntity } from "../entities/student-entity";
+import { TimeSlotEntity } from "../entities/timeslot-entity";
+import { MentorRepository } from "../repositories/mentor-repository";
+import { StudentRepository } from "../repositories/student-repository";
+import { MentorService } from "../services/mentor-service";
+import { StudentService } from "../services/student-service";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 const dynamoDBClient = new DynamoDBClient({ 

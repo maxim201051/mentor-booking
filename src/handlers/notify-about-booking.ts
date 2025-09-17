@@ -1,11 +1,11 @@
-import { EmailNotificationService } from "./services/email-notification-service";
-import { MentorService } from "./services/mentor-service";
-import { TimeSlotService } from "./services/timeslot-service";
-import { StudentService } from "./services/student-service";
-import { StudentRepository } from "./repositories/student-repository";
-import { MentorRepository } from "./repositories/mentor-repository";
-import { TimeSlotRepository } from "./repositories/timeslot-repository";
-import { BookingNotificationEntity, BookingNotificationEntitySchema } from "./entities/booking-notification-entity";
+import { EmailNotificationService } from "../services/email-notification-service";
+import { MentorService } from "../services/mentor-service";
+import { TimeSlotService } from "../services/timeslot-service";
+import { StudentService } from "../services/student-service";
+import { StudentRepository } from "../repositories/student-repository";
+import { MentorRepository } from "../repositories/mentor-repository";
+import { TimeSlotRepository } from "../repositories/timeslot-repository";
+import { BookingNotificationEntity, BookingNotificationEntitySchema } from "../entities/booking-notification-entity";
 import { SESClient } from "@aws-sdk/client-ses";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
