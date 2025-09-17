@@ -1,8 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { MentorRepository } from "./repositories/mentor-repository";
-import { TimeSlotRepository } from "./repositories/timeslot-repository";
-import { MentorService } from "./services/mentor-service";
-import { TimeSlotService } from "./services/timeslot-service"
+import { MentorRepository } from "../repositories/mentor-repository";
+import { TimeSlotRepository } from "../repositories/timeslot-repository";
+import { MentorService } from "../services/mentor-service";
+import { TimeSlotService } from "../services/timeslot-service"
 
 const dynamoDBClient = new DynamoDBClient({ 
     region: process.env.REGION 

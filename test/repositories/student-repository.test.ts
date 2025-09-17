@@ -1,4 +1,4 @@
-import { StudentRepository } from "../../lib/mentor-booking-service/repositories/student-repository";
+import { StudentRepository } from "../../src/repositories/student-repository";
 
 jest.mock("@aws-sdk/client-dynamodb", () => {
   const actual = jest.requireActual("@aws-sdk/client-dynamodb");

@@ -1,4 +1,4 @@
-import { StudentEntity } from "../../lib/mentor-booking-service/entities/student-entity"
+import { StudentEntity } from "../../src/entities/student-entity"
 
 export const students: StudentEntity[] = [
     {

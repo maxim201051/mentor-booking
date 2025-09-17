@@ -1,8 +1,8 @@
 import { GetItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { BookingRepository } from "../../lib/mentor-booking-service/repositories/booking-repository";
-import { BookingEntity } from "../../lib/mentor-booking-service/entities/booking-entity";
+import { BookingRepository } from "../../src/repositories/booking-repository";
+import { BookingEntity } from "../../src/entities/booking-entity";
 
 describe("BookingRepository Tests", () => {
 	let mockDynamoDBClient: any; 

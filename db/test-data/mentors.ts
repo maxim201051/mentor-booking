@@ -1,4 +1,4 @@
-import { MentorEntity } from "../../lib/mentor-booking-service/entities/mentor-entity";
+import { MentorEntity } from "../../src/entities/mentor-entity";
 
 export const mentors: MentorEntity[] = [
     {

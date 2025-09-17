@@ -1,5 +1,5 @@
-import { main } from "../../lib/mentor-booking-service/get-mentors-list";
-import { MentorService } from "../../lib/mentor-booking-service/services/mentor-service";
+import { main } from "../../src/handlers/get-mentors-list";
+import { MentorService } from "../../src/services/mentor-service";
 
 jest.mock("../../lib/mentor-booking-service/services/mentor-service");
 

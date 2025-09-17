@@ -1,4 +1,4 @@
-import { TimeSlotRepository } from "../../lib/mentor-booking-service/repositories/timeslot-repository";
+import { TimeSlotRepository } from "../../src/repositories/timeslot-repository";
 
 jest.mock("@aws-sdk/client-dynamodb", () => {
     const actual = jest.requireActual("@aws-sdk/client-dynamodb");

@@ -1,4 +1,4 @@
-import { TimeSlotEntity } from "../../lib/mentor-booking-service/entities/timeslot-entity";
+import { TimeSlotEntity } from "../../src/entities/timeslot-entity";
 
 export const timeSlots: TimeSlotEntity[] = [
     // Time slots for John Doe

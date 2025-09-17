@@ -1,11 +1,11 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { MentorEntity } from "./entities/mentor-entity";
-import { MentorRepository } from "./repositories/mentor-repository";
-import { MentorService } from "./services/mentor-service";
-import { TimeSlotService } from "./services/timeslot-service";
-import { TimeSlotRepository } from "./repositories/timeslot-repository";
-import { BookingService } from "./services/booking-service";
-import { BookingRepository } from "./repositories/booking-repository";
+import { MentorEntity } from "../entities/mentor-entity";
+import { MentorRepository } from "../repositories/mentor-repository";
+import { MentorService } from "../services/mentor-service";
+import { TimeSlotService } from "../services/timeslot-service";
+import { TimeSlotRepository } from "../repositories/timeslot-repository";
+import { BookingService } from "../services/booking-service";
+import { BookingRepository } from "../repositories/booking-repository";
 
 const dynamoDBClient = new DynamoDBClient({ 
     region: process.env.REGION 

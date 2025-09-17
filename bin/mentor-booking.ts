@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { MentorBookingServiceStack } from '../lib/mentor-booking-service/mentor-booking-service-stack';
 import * as dotenv from 'dotenv';
-import { DynamoDbStack } from '../lib/dynamodb/dynamodb-stack';
+import { MentorBookingServiceStack } from '../lib/mentor-booking-service-stack';
+import { DynamoDbStack } from '../lib/dynamodb-stack';
 
 dotenv.config();
 
