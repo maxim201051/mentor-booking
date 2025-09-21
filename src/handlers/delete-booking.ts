@@ -51,6 +51,10 @@ const sqsClient = new SQSClient({
 });
 
 export const main = async (event: any) => {
+    return await handleDeleteBooking(event, { mentorService, timeSlotService, studentService, bookingService })
+}
+
+export const handleDeleteBooking = async(event: any, dependencies: { mentorService: MentorService; timeSlotService: TimeSlotService; studentService: StudentService; bookingService: BookingService}) => {
     try {
         const bookingId = event.pathParameters?.bookingId;
         const studentId = event.headers?.auth;
@@ -71,7 +75,7 @@ export const main = async (event: any) => {
             };
         };
 
-        const booking: BookingEntity|null = await bookingService.getBookingById(bookingId);
+        const booking: BookingEntity|null = await dependencies.bookingService.getBookingById(bookingId);
         if(!booking) {
             return {
                 statusCode: 400,
@@ -89,7 +93,7 @@ export const main = async (event: any) => {
             };
         }
 
-        const mentor: MentorEntity|null = await mentorService.getMentorById(booking.mentorId);
+        const mentor: MentorEntity|null = await dependencies.mentorService.getMentorById(booking.mentorId);
         if(!mentor) {
             return {
                 statusCode: 400,
@@ -98,7 +102,7 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        const timeSlot: TimeSlotEntity|null = await timeSlotService.getTimeSlotById(booking.timeslotId);
+        const timeSlot: TimeSlotEntity|null = await dependencies.timeSlotService.getTimeSlotById(booking.timeslotId);
         if (!timeSlot) {
             return {
                 statusCode: 400,
@@ -108,7 +112,7 @@ export const main = async (event: any) => {
             };
         }
 
-        const student: StudentEntity|null = await studentService.getStudentById(booking.studentId);
+        const student: StudentEntity|null = await dependencies.studentService.getStudentById(booking.studentId);
         if(!student) {
             return {
                 statusCode: 400,
@@ -118,8 +122,8 @@ export const main = async (event: any) => {
             };
         }
 
-        await bookingService.deleteBookingById(bookingId);
-        await timeSlotService.markTimeslotAsNonBooked(timeSlot.id);
+        await dependencies.bookingService.deleteBookingById(bookingId);
+        await dependencies.timeSlotService.markTimeslotAsNonBooked(timeSlot.id);
 		await sendBookingDeletedEvent(booking, student, mentor, timeSlot);
         return {
             statusCode: 200,
