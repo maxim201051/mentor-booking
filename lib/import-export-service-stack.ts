@@ -15,6 +15,7 @@ import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 interface ImportExportServiceStackProps extends StackProps {
     api: RestApi;
     mentorsTable: Table;
+    deadLetterQueue: Queue;
 }
 
 export class ImportExportServiceStack extends Stack {
@@ -29,7 +30,10 @@ export class ImportExportServiceStack extends Stack {
         //sqs
         const importExportNotificationsQueue = new Queue(this, 'ImportExportNotificationsQueue', {
 			queueName: 'ImportExportNotificationsQueue',
-            //deo queue???
+            deadLetterQueue: {
+                queue: props.deadLetterQueue,
+                maxReceiveCount: 3,
+            },
 		});
 
         //s3

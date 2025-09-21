@@ -14,6 +14,7 @@ interface MentorBookingServiceStackProps extends StackProps {
     timeSlotsTable: dynamodb.Table;
 	bookingsTable: dynamodb.Table;
 	studentsTable: dynamodb.Table;
+    deadLetterQueue: Queue;
 }
 
 export class MentorBookingServiceStack extends Stack {
@@ -25,9 +26,11 @@ export class MentorBookingServiceStack extends Stack {
 		//SQS
 		const notificationQueue = new Queue(this, 'NotificationsQueue', {
 			queueName: 'NotificationsQueue',
-            //deo queue???
+            deadLetterQueue: {
+                queue: props.deadLetterQueue,
+                maxReceiveCount: 3,
+            },
 		});
-		
 
         //tables
         const mentorsTable = props.mentorsTable;

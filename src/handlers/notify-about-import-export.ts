@@ -33,8 +33,6 @@ export const handleNotifyAboutImportExport = async (event: any, dependencies: { 
         };
     } catch (error) {
         console.error(error);
-        return {
-            error: "Internal Server Error",
-        };
+        throw error;
     }
 }
