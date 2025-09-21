@@ -51,10 +51,14 @@ const sqsClient = new SQSClient({
 });
 
 export const main = async (event: any) => {
+    return await handleCreateBooking(event, { mentorService, timeSlotService, studentService, bookingService })
+}
+
+export const handleCreateBooking = async(event: any, dependencies: { mentorService: MentorService; timeSlotService: TimeSlotService; studentService: StudentService; bookingService: BookingService}) => {
     try {
         const body = JSON.parse(event.body);
         const booking: BookingEntity = BookingSchema.parse(body);
-        const mentor: MentorEntity|null = await mentorService.getMentorById(booking.mentorId);
+        const mentor: MentorEntity|null = await dependencies.mentorService.getMentorById(booking.mentorId);
         if(!mentor) {
             return {
                 statusCode: 400,
@@ -63,7 +67,7 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        const timeSlot: TimeSlotEntity|null = await timeSlotService.getTimeSlotById(booking.timeslotId);
+        const timeSlot: TimeSlotEntity|null = await dependencies.timeSlotService.getTimeSlotById(booking.timeslotId);
         if (!timeSlot || timeSlot.isBooked || timeSlot.mentorId !== booking.mentorId) {
             return {
                 statusCode: 400,
@@ -73,7 +77,7 @@ export const main = async (event: any) => {
             };
         }
 
-        const student: StudentEntity|null = await studentService.getStudentById(booking.studentId);
+        const student: StudentEntity|null = await dependencies.studentService.getStudentById(booking.studentId);
         if(!student) {
             return {
                 statusCode: 400,
@@ -82,7 +86,7 @@ export const main = async (event: any) => {
                 }),
             };
         }
-        if(await bookingService.isStudentHasOverlappingBookings(booking.studentId, timeSlot.startDate, timeSlot.endDate)) {
+        if(await dependencies.bookingService.isStudentHasOverlappingBookings(booking.studentId, timeSlot.startDate, timeSlot.endDate)) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({
@@ -90,8 +94,8 @@ export const main = async (event: any) => {
                 }),
               };
         }
-        const createdBooking = await bookingService.createBooking(booking);
-        await timeSlotService.markTimeslotAsBooked(timeSlot.id);
+        const createdBooking = await dependencies.bookingService.createBooking(booking);
+        await dependencies.timeSlotService.markTimeslotAsBooked(timeSlot.id);
         await sendBookingCreatedEvent(createdBooking, student, mentor, timeSlot);
         return {
             statusCode: 201,

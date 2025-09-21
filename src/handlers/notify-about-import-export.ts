@@ -25,7 +25,7 @@ export const handleNotifyAboutImportExport = async (event: any, dependencies: { 
                     }),
                 };
             }
-            dependencies.defaultNotificationService.notifyAboutImportExport(importExportEvent);
+            await dependencies.defaultNotificationService.notifyAboutImportExport(importExportEvent);
         }
     
         return {

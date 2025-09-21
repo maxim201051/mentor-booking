@@ -9,6 +9,10 @@ const emailNotificationService = new EmailNotificationService(
 )
 
 export const main = async (event: any) => {
+    return await handleNotifyAboutBooking(event, { emailNotificationService })
+}
+
+export const handleNotifyAboutBooking = async (event: any, dependencies: { emailNotificationService: EmailNotificationService }) => {
     try {
         for (const record of event.Records) {
             const bookingEvent: BookingNotificationEntity = BookingNotificationEntitySchema.parse(JSON.parse(record.body));
@@ -20,7 +24,7 @@ export const main = async (event: any) => {
                     }),
                 };
             }
-            emailNotificationService.notifyAboutBooking(bookingEvent);
+            await dependencies.emailNotificationService.notifyAboutBooking(bookingEvent);
         }
     
         return {
