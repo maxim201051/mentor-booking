@@ -3,12 +3,13 @@ import * as cdk from 'aws-cdk-lib';
 import * as dotenv from 'dotenv';
 import { MentorBookingServiceStack } from '../lib/mentor-booking-service-stack';
 import { DynamoDbStack } from '../lib/dynamodb-stack';
+import { ImportExportServiceStack } from '../lib/import-export-service-stack';
 
 dotenv.config();
 
 const app = new cdk.App();
 const dynamoDbStack = new DynamoDbStack(app, 'DynamoDbStack');
-new MentorBookingServiceStack(app, 'MentorBookingServiceStack', {
+const mentorBookingServiceStack = new MentorBookingServiceStack(app, 'MentorBookingServiceStack', {
     env: {
         region: process.env.REGION,
     },
@@ -17,3 +18,10 @@ new MentorBookingServiceStack(app, 'MentorBookingServiceStack', {
     bookingsTable: dynamoDbStack.bookingsTable,
     studentsTable: dynamoDbStack.studentsTable,
 });
+new ImportExportServiceStack(app, 'ImportExportServiceStack', {
+    env: {
+        region: process.env.REGION,
+    },
+    api: mentorBookingServiceStack.api,
+    mentorsTable: dynamoDbStack.mentorsTable,
+})
