@@ -28,8 +28,6 @@ export const main = async (event: any) => {
         };
     } catch (error) {
         console.error(error);
-        return {
-            error: "Internal Server Error",
-        };
+        throw error;
     }
 }
