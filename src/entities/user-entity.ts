@@ -1,13 +1,10 @@
 import z from "zod"
-
-export interface UserEntity {
-    id: string,
-    fullName: string,
-    email: string    
-}
+import { v4 as uuidv4 } from 'uuid';
 
 export const UserSchema = z.object({
-    id: z.string(),
-    fullName: z.string(),
-    email: z.string(),
-})
+    id: z.string().default(() => uuidv4()),
+    fullName: z.string().nonempty("fullName is required"),
+    email: z.string().nonempty("email is required"),
+});
+
+export type UserEntity = z.infer<typeof UserSchema>;
