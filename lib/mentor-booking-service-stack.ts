@@ -17,6 +17,8 @@ interface MentorBookingServiceStackProps extends StackProps {
 }
 
 export class MentorBookingServiceStack extends Stack {
+    public readonly api: apigateway.RestApi;
+
     constructor(scope: Construct, id: string, props: MentorBookingServiceStackProps) {
         super(scope, id, props);
 
@@ -159,12 +161,12 @@ export class MentorBookingServiceStack extends Stack {
         notificationQueue.grantSendMessages(deleteBookingFunction);
 
         //API Gateway
-        const api = new apigateway.RestApi(this, 'MentorBookingApi', {
+        this.api = new apigateway.RestApi(this, 'MentorBookingApi', {
             restApiName: 'Mentor Booking Service',
             description: 'API for Mentor Booking Service',
         });
 
-        const mentorsResource = api.root.addResource('mentors');
+        const mentorsResource = this.api.root.addResource('mentors');
         const getAllMentorsIntegration = new apigateway.LambdaIntegration(getAllMentorsFunction);
         mentorsResource.addMethod('GET', getAllMentorsIntegration);
 
@@ -180,7 +182,7 @@ export class MentorBookingServiceStack extends Stack {
         const getBookingsMentorIntegration = new apigateway.LambdaIntegration(getBookingsMentorFunction);
         getBookingsResource.addMethod('GET', getBookingsMentorIntegration);
 
-        const createBookingResource = api.root.addResource('bookings');
+        const createBookingResource = this.api.root.addResource('bookings');
         const createBookingIntegration = new apigateway.LambdaIntegration(createBookingFunction);
         createBookingResource.addMethod('POST', createBookingIntegration);
 
@@ -189,7 +191,7 @@ export class MentorBookingServiceStack extends Stack {
         deleteBookingResource.addMethod('DELETE', deleteBookingIntegration);
 
         new CfnOutput(this, 'ApiUrl', {
-        	value: api.url,
+        	value: this.api.url,
         });
 
 		new CfnOutput(this, 'NotificationsQueueUrl', {

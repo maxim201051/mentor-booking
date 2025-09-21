@@ -1,6 +1,6 @@
-import { DynamoDBClient, GetItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { MentorEntity } from "../entities/mentor-entity";
-import { unmarshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamodbUtils } from "../utils/dynamodb-utils";
 
 export class MentorRepository {
@@ -46,6 +46,19 @@ export class MentorRepository {
             } catch (error: any) {
             console.error("Error fetching all mentors:", error);
             throw new Error("Could not fetch mentors");
+        }
+    }
+
+    async createMentor(mentor: MentorEntity): Promise<void> {
+        try {
+            const command = new PutItemCommand({
+                TableName: this.mentorsTableName,
+                Item: marshall(mentor),
+            });
+            await this.dynamoDBClient.send(command);
+        } catch (error) {
+            console.error('Error creating mentor:', error);
+            throw new Error('Failed to create mentor');
         }
     }
 

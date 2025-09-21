@@ -16,4 +16,8 @@ export class MentorService {
     async getMentorById(mentorId: string): Promise<MentorEntity|null> {
         return await this.mentorRepository.getMentorById(mentorId);
     }
+
+    async createMentor(mentor: MentorEntity): Promise<void> {
+        await this.mentorRepository.createMentor(mentor);
+    }
 }
