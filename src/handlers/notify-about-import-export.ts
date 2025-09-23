@@ -16,7 +16,7 @@ export const handleNotifyAboutImportExport = async (event: any, dependencies: { 
     try {
         for (const record of event.Records) {
             const importExportEvent = JSON.parse(record.body);
-            if (importExportEvent.type !== "mentors.imported") {
+            if (importExportEvent.type !== "mentors.imported" && importExportEvent.type !== "bookings.exported") {
                 console.log(`Unexpected event type: ${importExportEvent.type}`)
                 return {
                     statusCode: 400,

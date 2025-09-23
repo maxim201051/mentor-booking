@@ -2,7 +2,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { UploadService } from '../services/upload-service';
 
 const uploadService = new UploadService(
-    process.env.UPLOAD_MENTORS_BUCKET_NAME || '',
+    process.env.IMPORT_EXPORT_BUCKET_NAME || '',
     new S3Client({ 
         region: process.env.REGION,
     }),

@@ -1,4 +1,4 @@
-import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { BookingEntity } from "../entities/booking-entity";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
@@ -97,4 +97,18 @@ export class BookingRepository {
         }
     }
 
+    async getAllBookings(): Promise<BookingEntity[]> {
+        try {
+            const bookingsScanCommand = new ScanCommand({
+                TableName: this.bookingsTableName,
+            });
+
+            const bookingsResponse = await this.dynamoDBClient.send(bookingsScanCommand);
+            const bookings = bookingsResponse.Items?.map((item) => unmarshall(item) as BookingEntity) || [];
+            return bookings;
+        } catch (error: any) {
+            console.error("Error fetching all bookings:", error);
+            throw new Error("Could not fetch bookings");
+        }
+    }
 }
