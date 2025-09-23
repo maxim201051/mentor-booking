@@ -78,7 +78,7 @@ export class BookingRepository {
         }
     }
 
-    async getBookingsByMentorIdWithFilters(mentorId: string): Promise<BookingEntity[]> {
+    async getBookingsByMentorId(mentorId: string): Promise<BookingEntity[]> {
         try {
             const command = new QueryCommand({
                 TableName: this.bookingsTableName,

@@ -123,6 +123,20 @@ export class MentorBookingServiceStack extends Stack {
             },
       	});
 
+        const getBookingsStudentFunction = new NodejsFunction(this, 'GetBookingsStudentFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, '../src/handlers/get-bookings-by-student.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                BOOKINGS_TABLE_NAME: bookingsTable.tableName,
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                STUDENTS_TABLE_NAME: studentsTable.tableName,
+            },
+      	});
+
         const notifyAboutBookingFunction = new NodejsFunction(this, 'notifyAboutBookingFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
             memorySize: 256,
@@ -155,11 +169,14 @@ export class MentorBookingServiceStack extends Stack {
         timeSlotsTable.grantReadWriteData(createBookingFunction);
         timeSlotsTable.grantReadWriteData(deleteBookingFunction);
         timeSlotsTable.grantReadWriteData(createTimeSlotFunction);
+        timeSlotsTable.grantReadData(getBookingsStudentFunction);
         bookingsTable.grantReadWriteData(createBookingFunction);
         bookingsTable.grantReadWriteData(deleteBookingFunction);
         bookingsTable.grantReadData(getBookingsMentorFunction);
+        bookingsTable.grantReadData(getBookingsStudentFunction);
         studentsTable.grantReadData(createBookingFunction);
         studentsTable.grantReadData(deleteBookingFunction);
+        studentsTable.grantReadData(getBookingsStudentFunction);
 		notificationQueue.grantSendMessages(createBookingFunction);
         notificationQueue.grantSendMessages(deleteBookingFunction);
 
@@ -185,11 +202,13 @@ export class MentorBookingServiceStack extends Stack {
         const getBookingsMentorIntegration = new apigateway.LambdaIntegration(getBookingsMentorFunction);
         getBookingsResource.addMethod('GET', getBookingsMentorIntegration);
 
-        const createBookingResource = this.api.root.addResource('bookings');
+        const bookingsResource = this.api.root.addResource('bookings');
         const createBookingIntegration = new apigateway.LambdaIntegration(createBookingFunction);
-        createBookingResource.addMethod('POST', createBookingIntegration);
+        const getBookingsStudentIntegration = new apigateway.LambdaIntegration(getBookingsStudentFunction);
+        bookingsResource.addMethod('GET', getBookingsStudentIntegration);
+        bookingsResource.addMethod('POST', createBookingIntegration);
 
-        const deleteBookingResource = createBookingResource.addResource('{bookingId}');
+        const deleteBookingResource = bookingsResource.addResource('{bookingId}');
         const deleteBookingIntegration = new apigateway.LambdaIntegration(deleteBookingFunction);
         deleteBookingResource.addMethod('DELETE', deleteBookingIntegration);
 
