@@ -10,16 +10,30 @@ export class DefaultNotificationService {
     }
 
     async notifyAboutImportExport(importExportEvent : any): Promise<void> {
-        const command = new PublishCommand({
-            TopicArn: this.importExportTopicArn,
-            Subject: "Mentor Import Report",
-            Message: `Mentors Import Completed:
-                Total: ${importExportEvent.total}
-                Success: ${importExportEvent.success}
-                Failed: ${importExportEvent.failed}`,
-        });
+        let command;
+        if(importExportEvent.type === "mentors.imported") {
+            command = new PublishCommand({
+                TopicArn: this.importExportTopicArn,
+                Subject: "Mentor Import Report",
+                Message: `Mentors Import Completed:
+                    Total: ${importExportEvent.total}
+                    Success: ${importExportEvent.success}
+                    Failed: ${importExportEvent.failed}`,
+            });
+        }
+        if(importExportEvent.type === "bookings.exported") {
+            command = new PublishCommand({
+                TopicArn: this.importExportTopicArn,
+                Subject: "Bookings Export Report",
+                Message: `Bookings Export Completed:
+                    Status: ${importExportEvent.exportStatus}
+                    Records count: ${importExportEvent.recordCount}
+                    Download Url: ${importExportEvent.downloadUrl}`,
+            });
+        }
         console.log(command);
-        await this.snsClient.send(command);
+        if(command !== undefined) {
+            await this.snsClient.send(command);
+        }
     }
-
 }

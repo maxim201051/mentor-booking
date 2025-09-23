@@ -66,4 +66,8 @@ export class BookingService {
         }
         return bookings;
     }
+
+    async getAllBookings(): Promise<BookingEntity[]> {
+        return await this.bookingRepository.getAllBookings();
+    }
 }

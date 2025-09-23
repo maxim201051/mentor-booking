@@ -16,6 +16,8 @@ interface ImportExportServiceStackProps extends StackProps {
     api: RestApi;
     mentorsTable: Table;
     deadLetterQueue: Queue;
+    timeSlotsTable: Table;
+	bookingsTable: Table;
 }
 
 export class ImportExportServiceStack extends Stack {
@@ -36,14 +38,24 @@ export class ImportExportServiceStack extends Stack {
             },
 		});
 
+        const bookingExportQueue = new Queue(this, 'BookingExportQueue', {
+			queueName: 'BookingExportQueue',
+            deadLetterQueue: {
+                queue: props.deadLetterQueue,
+                maxReceiveCount: 3,
+            },
+		});
+
         //s3
-        const importBucket = new Bucket(this, "ImportBucket", {
+        const importExportBucket = new Bucket(this, "ImportExportBucket", {
             removalPolicy: RemovalPolicy.DESTROY, 
             autoDeleteObjects: true,                 
         });
         
         //tables
         const mentorsTable = props.mentorsTable;
+        const timeSlotsTable = props.timeSlotsTable;
+		const bookingsTable = props.bookingsTable;
 
         //functions
         const uploadMentorsFunction = new NodejsFunction(this, 'UploadMentorsFunction', {
@@ -54,7 +66,7 @@ export class ImportExportServiceStack extends Stack {
             entry: join(__dirname, '../src/handlers/upload-mentors.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
-                UPLOAD_MENTORS_BUCKET_NAME: importBucket.bucketName,
+                IMPORT_EXPORT_BUCKET_NAME: importExportBucket.bucketName,
             },
       	});
 
@@ -66,13 +78,13 @@ export class ImportExportServiceStack extends Stack {
             entry: join(__dirname, '../src/handlers/process-upload.ts'),
             environment: {
                 REGION: process.env.REGION || "eu-west-2",
-                UPLOAD_MENTORS_BUCKET_NAME: importBucket.bucketName,
+                IMPORT_EXPORT_BUCKET_NAME: importExportBucket.bucketName,
                 MENTORS_TABLE_NAME: mentorsTable.tableName,
                 IMPORT_EXPORT_NOTIFICATIONS_QUEUE_URL: importExportNotificationsQueue.queueUrl,
             },
       	});
 
-        const notifyAboutMentorsImportFunction = new NodejsFunction(this, "NotifyAboutMentorsImportFunction", {
+        const notifyAboutImportExportFunction = new NodejsFunction(this, "NotifyAboutImportExportFunction", {
             runtime: Runtime.NODEJS_20_X,
             memorySize: 256,
             timeout: Duration.seconds(5),
@@ -84,21 +96,60 @@ export class ImportExportServiceStack extends Stack {
             },
         });
 
-        notifyAboutMentorsImportFunction.addEventSource(
+        const triggerBookingExportFunction = new NodejsFunction(this, "TriggerBookingExportFunction", {
+            runtime: Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: join(__dirname, '../src/handlers/trigger-booking-export.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                BOOKING_EXPORT_QUEUE_URL: bookingExportQueue.queueUrl,
+            },
+        });
+
+        const exportBookingFunction = new NodejsFunction(this, "ExportBookingFunction", {
+            runtime: Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: join(__dirname, '../src/handlers/export-bookings.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+                BOOKINGS_TABLE_NAME: bookingsTable.tableName,
+                IMPORT_EXPORT_NOTIFICATIONS_QUEUE_URL: importExportNotificationsQueue.queueUrl,
+                IMPORT_EXPORT_BUCKET_NAME: importExportBucket.bucketName,
+            },
+        });
+
+        notifyAboutImportExportFunction.addEventSource(
 			new SqsEventSource(importExportNotificationsQueue, {
 				batchSize: 5,
 			})
 		);
 
-        //permissions
-        importBucket.grantPut(uploadMentorsFunction);
-        importBucket.grantRead(processUploadFunction);
-        mentorsTable.grantWriteData(processUploadFunction); 
-        importExportNotificationsQueue.grantSendMessages(processUploadFunction);
-        importExportNotificationsQueue.grantConsumeMessages(notifyAboutMentorsImportFunction); 
-        importExportTopic.grantPublish(notifyAboutMentorsImportFunction); 
+        exportBookingFunction.addEventSource(
+            new SqsEventSource(bookingExportQueue, {
+				batchSize: 5,
+			})
+        );
 
-        importBucket.addEventNotification(
+        //permissions
+        importExportBucket.grantPut(uploadMentorsFunction);
+        importExportBucket.grantRead(processUploadFunction);
+        importExportBucket.grantPut(exportBookingFunction);
+        importExportBucket.grantRead(exportBookingFunction);
+        mentorsTable.grantWriteData(processUploadFunction); 
+        bookingsTable.grantReadData(exportBookingFunction);
+        importExportNotificationsQueue.grantSendMessages(exportBookingFunction);
+        importExportNotificationsQueue.grantSendMessages(processUploadFunction);
+        importExportNotificationsQueue.grantConsumeMessages(notifyAboutImportExportFunction); 
+        importExportTopic.grantPublish(notifyAboutImportExportFunction); 
+        bookingExportQueue.grantSendMessages(triggerBookingExportFunction);
+        bookingExportQueue.grantConsumeMessages(exportBookingFunction);
+
+        importExportBucket.addEventNotification(
             EventType.OBJECT_CREATED_PUT,
             new LambdaDestination(processUploadFunction)
         );
@@ -110,5 +161,9 @@ export class ImportExportServiceStack extends Stack {
         const importMentorsIntegration = new LambdaIntegration(uploadMentorsFunction);
         importMentorsResource.addMethod('POST', importMentorsIntegration);
 
+        const exportResource = api.root.addResource("export");
+        const exportBookingsResource = exportResource.addResource("bookings");
+        const exportBookingsIntegration = new LambdaIntegration(triggerBookingExportFunction);
+        exportBookingsResource.addMethod('POST', exportBookingsIntegration);
     }
 }

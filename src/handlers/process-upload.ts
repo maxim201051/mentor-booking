@@ -9,7 +9,7 @@ import csvParser from "csv-parser";
 import { MentorEntity, MentorSchema } from "../entities/mentor-entity";
 
 const uploadService = new UploadService(
-    process.env.UPLOAD_MENTORS_BUCKET_NAME || '',
+    process.env.IMPORT_EXPORT_BUCKET_NAME || '',
     new S3Client({ 
         region: process.env.REGION,
     }),

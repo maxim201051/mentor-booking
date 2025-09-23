@@ -28,4 +28,6 @@ new ImportExportServiceStack(app, 'ImportExportServiceStack', {
     api: mentorBookingServiceStack.api,
     mentorsTable: dynamoDbStack.mentorsTable,
     deadLetterQueue: sharedResourcesStack.deadLetterQueue,
+    bookingsTable: dynamoDbStack.bookingsTable,
+    timeSlotsTable: dynamoDbStack.timeSlotsTable,
 })
