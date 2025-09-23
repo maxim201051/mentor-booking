@@ -123,7 +123,7 @@ export const handleDeleteBooking = async(event: any, dependencies: { mentorServi
         }
 
         await dependencies.bookingService.deleteBookingById(bookingId);
-        await dependencies.timeSlotService.markTimeslotAsNonBooked(timeSlot.id);
+        await dependencies.timeSlotService.markTimeslotAsNonBooked(timeSlot);
 		await sendBookingDeletedEvent(booking, student, mentor, timeSlot);
         return {
             statusCode: 200,

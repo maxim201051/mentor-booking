@@ -16,12 +16,23 @@ export class TimeSlotService {
         return await this.timeSlotRepository.getTimeSlotById(timeSlotId);
     }
 
-    async markTimeslotAsBooked(timeSlotId: string): Promise<void> {
-        await this.timeSlotRepository.updateTimeSlotIsBookedStatus(timeSlotId, true);
+    async markTimeslotAsBooked(timeslot: TimeSlotEntity): Promise<void> {
+        timeslot.isBooked = true;
+        await this.updateTimeslot(timeslot);
     }
 
-    async markTimeslotAsNonBooked(timeSlotId: string): Promise<void> {
-        await this.timeSlotRepository.updateTimeSlotIsBookedStatus(timeSlotId, false);
+    async markTimeslotAsNonBooked(timeslot: TimeSlotEntity): Promise<void> {
+        timeslot.isBooked = false;
+        await this.updateTimeslot(timeslot);
+    }
+
+    async updateTimeslot(timeslot: TimeSlotEntity): Promise<TimeSlotEntity> {
+        await this.timeSlotRepository.updateTimeSlot(timeslot); 
+        return timeslot;
+    }
+
+    async deleteTimeSlotById(timeSlotId: string): Promise<void> {
+        await this.timeSlotRepository.deleteTimeslotById(timeSlotId);
     }
 
     async getOverlappingTimeSlotsByMentor(mentorId: string, startDate: Date, endDate: Date): Promise<TimeSlotEntity[]> {

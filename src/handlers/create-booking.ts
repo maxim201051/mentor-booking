@@ -95,7 +95,7 @@ export const handleCreateBooking = async(event: any, dependencies: { mentorServi
               };
         }
         const createdBooking = await dependencies.bookingService.createBooking(booking);
-        await dependencies.timeSlotService.markTimeslotAsBooked(timeSlot.id);
+        await dependencies.timeSlotService.markTimeslotAsBooked(timeSlot);
         await sendBookingCreatedEvent(createdBooking, student, mentor, timeSlot);
         return {
             statusCode: 201,

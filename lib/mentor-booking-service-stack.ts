@@ -77,6 +77,30 @@ export class MentorBookingServiceStack extends Stack {
             },
         });
 
+        const updateTimeSlotFunction = new NodejsFunction(this, 'UpdateTimeSlotFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, '../src/handlers/update-timeslot.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+            },
+        });
+
+        const deleteTimeSlotFunction = new NodejsFunction(this, 'DeleteTimeSlotFunction', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            memorySize: 256,
+            timeout: Duration.seconds(5),
+            handler: 'main',
+            entry: path.join(__dirname, '../src/handlers/delete-timeslot.ts'),
+            environment: {
+                REGION: process.env.REGION || "eu-west-2",
+                TIMESLOTS_TABLE_NAME: timeSlotsTable.tableName,
+            },
+        });
+
         const createBookingFunction = new NodejsFunction(this, 'CreateBookingFunction', {
             runtime: lambda.Runtime.NODEJS_20_X,
             memorySize: 256,
@@ -170,6 +194,8 @@ export class MentorBookingServiceStack extends Stack {
         timeSlotsTable.grantReadWriteData(deleteBookingFunction);
         timeSlotsTable.grantReadWriteData(createTimeSlotFunction);
         timeSlotsTable.grantReadData(getBookingsStudentFunction);
+        timeSlotsTable.grantReadWriteData(updateTimeSlotFunction);
+        timeSlotsTable.grantReadWriteData(deleteTimeSlotFunction);
         bookingsTable.grantReadWriteData(createBookingFunction);
         bookingsTable.grantReadWriteData(deleteBookingFunction);
         bookingsTable.grantReadData(getBookingsMentorFunction);
@@ -197,6 +223,11 @@ export class MentorBookingServiceStack extends Stack {
         const createTimeSlotIntegration = new apigateway.LambdaIntegration(createTimeSlotFunction)
         timeslotsResource.addMethod('GET', getTimeSlotsByMentorIntegration);
         timeslotsResource.addMethod('POST', createTimeSlotIntegration);
+        const timeslotIdResource = timeslotsResource.addResource('{timeslotId}');
+        const updateTimeslotIntegration = new apigateway.LambdaIntegration(updateTimeSlotFunction);
+        const deleteTimeslotIntegration = new apigateway.LambdaIntegration(deleteTimeSlotFunction);
+        timeslotIdResource.addMethod('PUT', updateTimeslotIntegration);
+        timeslotIdResource.addMethod('DELETE', deleteTimeslotIntegration);
 
         const getBookingsResource = mentorIdResource.addResource('bookings');
         const getBookingsMentorIntegration = new apigateway.LambdaIntegration(getBookingsMentorFunction);
