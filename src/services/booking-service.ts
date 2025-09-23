@@ -47,7 +47,16 @@ export class BookingService {
     }
 
     async getBookingsByMentorIdWithFilters(mentorId: string, queryParams: any): Promise<BookingEntity[]> {
-        const bookings: BookingEntity[] = await this.bookingRepository.getBookingsByMentorIdWithFilters(mentorId);
+        const bookings: BookingEntity[] = await this.bookingRepository.getBookingsByMentorId(mentorId);
+        return await this.filterBookings(bookings, queryParams);
+    }
+
+    async getBookingsByStudentIdWithFilters(studentId: string, queryParams: any): Promise<BookingEntity[]> {
+        const bookings: BookingEntity[] = await this.bookingRepository.getBookingsByStudentId(studentId);
+        return await this.filterBookings(bookings, queryParams);
+    }
+
+    async filterBookings(bookings: BookingEntity[], queryParams: any): Promise<BookingEntity[]> {
         if(queryParams.type === "upcoming") {
             for(const booking of bookings) {
                 const timeslot: TimeSlotEntity|null = await this.timeslotService.getTimeSlotById(booking.timeslotId);
