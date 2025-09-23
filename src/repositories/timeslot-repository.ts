@@ -1,5 +1,5 @@
 import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { TimeSlotEntity, TimeSlotSchema } from "../entities/timeslot-entity";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
@@ -55,24 +55,42 @@ export class TimeSlotRepository {
         }
     }
 
-    async updateTimeSlotIsBookedStatus(timeslotId: string, isBooked: boolean): Promise<void> {
+    async updateTimeSlot(timeslot: TimeSlotEntity): Promise<void> {
         try {
             const command = new UpdateCommand({
                 TableName: this.timeSlotsTableName,
                 Key: {
-                    id: timeslotId,
+                    id: timeslot.id,
                 },
-                UpdateExpression: "set isBooked = :isBooked",
+                UpdateExpression: "set mentorId = :mentorId, startDate = :startDate, endDate = :endDate, isBooked = :isBooked",
                 ExpressionAttributeValues: {
-                  ":isBooked": isBooked,
+                    ":mentorId": timeslot.mentorId,
+                    ":startDate": timeslot.startDate.toISOString(),
+                    ":endDate": timeslot.endDate.toISOString(),
+                    ":isBooked": timeslot.isBooked,
                 },
                 ReturnValues: "ALL_NEW",
             });
             
             await this.dynamoDBClient.send(command);
         } catch (error) {
-            console.error(`Error updating isBooked status of time slot ${timeslotId}:`, error);
-            throw new Error(`Could not update isBooked status of time slot ${timeslotId}`);
+            console.error(`Error updating isBooked status of time slot ${timeslot.id}:`, error);
+            throw new Error(`Could not update isBooked status of time slot ${timeslot.id}`);
+        }
+    }
+
+    async deleteTimeslotById(timeslotId: string): Promise<void> {
+        try {
+            const command = new DeleteCommand({
+                TableName: this.timeSlotsTableName,
+                Key: {
+                    id: timeslotId,
+                },
+            });
+            await this.dynamoDBClient.send(command);
+        } catch (error) {
+            console.error(`Error deleting timeslot by ID ${timeslotId}:`, error);
+            throw new Error(`Failed to delete timeslot by ID ${timeslotId}`);
         }
     }
 
