@@ -13,26 +13,23 @@ export const main = async (event: any) => {
 };
 
 export const handleNotifyAboutImportExport = async (event: any, dependencies: { defaultNotificationService: DefaultNotificationService; }) => {
-    try {
-        for (const record of event.Records) {
+    for (const record of event.Records) {
+        try {
             const importExportEvent = JSON.parse(record.body);
             if (importExportEvent.type !== "mentors.imported" && importExportEvent.type !== "bookings.exported") {
                 console.log(`Unexpected event type: ${importExportEvent.type}`)
                 return {
-                    statusCode: 400,
-                    body: JSON.stringify({
-                        error: 'Unexpected event type',
-                    }),
+                    message: 'Unexpected event type',
                 };
             }
             await dependencies.defaultNotificationService.notifyAboutImportExport(importExportEvent);
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-    
-        return {
-            message: "Notifications processed",
-        };
-    } catch (error) {
-        console.error(error);
-        throw error;
     }
+
+    return {
+        message: "Notifications processed",
+    };
 }

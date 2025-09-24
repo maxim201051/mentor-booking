@@ -34,10 +34,10 @@ const bookingService = new BookingService(
 );
 
 export const main = async (event: any) => {
-    return await handle(event, { mentorService, bookingService })
+    return await handleGetBookingsByMentor(event, { mentorService, bookingService })
 }
 
-export const handle = async (event: any, dependencies: { mentorService: MentorService; bookingService: BookingService; }) => {
+export const handleGetBookingsByMentor = async (event: any, dependencies: { mentorService: MentorService; bookingService: BookingService; }) => {
     try {
         const queryParams = event.queryStringParameters || {};
         const mentorId = event.pathParameters?.mentorId;

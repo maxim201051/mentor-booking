@@ -13,25 +13,23 @@ export const main = async (event: any) => {
 }
 
 export const handleNotifyAboutBooking = async (event: any, dependencies: { emailNotificationService: EmailNotificationService }) => {
-    try {
-        for (const record of event.Records) {
+    for (const record of event.Records) {
+        try {
             const bookingEvent: BookingNotificationEntity = BookingNotificationEntitySchema.parse(JSON.parse(record.body));
             if (bookingEvent.type !== "booking.created" && bookingEvent.type !== "booking.cancelled") {
                 return {
-                    statusCode: 400,
-                    body: JSON.stringify({
-                        error: 'Unexpected event type',
-                    }),
+                    message: 'Unexpected event type',
                 };
             }
             await dependencies.emailNotificationService.notifyAboutBooking(bookingEvent);
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-    
-        return {
-            message: "Notifications processed",
-        };
-    } catch (error) {
-        console.error(error);
-        throw error;
     }
+
+    return {
+        message: "Notifications processed",
+    };
+
 }

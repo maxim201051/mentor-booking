@@ -34,8 +34,8 @@ export const main = async (event: any) => {
 
 export const handleProcessUpload = async (event: any, dependencies: { mentorService: any; }) => {
     console.log("Processing upload")
-    try {
-        for (const record of event.Records) {
+    for (const record of event.Records) {
+        try {
             const fileKey = record.s3.object.key;
             console.log(fileKey)
             const s3Stream = await uploadService.getMentorsImport(fileKey) as Readable;
@@ -54,7 +54,7 @@ export const handleProcessUpload = async (event: any, dependencies: { mentorServ
                             ...data,
                             skills: data.skills.split(";"), 
                             experience: Number(data.experience),
-                          };
+                            };
                         const mentor : MentorEntity = MentorSchema.parse(transformedData);
                         await dependencies.mentorService.createMentor(mentor);
                         createdMentors.push(mentor);
@@ -67,15 +67,15 @@ export const handleProcessUpload = async (event: any, dependencies: { mentorServ
                 .on("error", reject);
             });
             await sendMentorsImpordedEvent(createdMentors.length, failed);
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-        return {
-           message: 'Mentors import files were successfully processed',
-        };
-    } catch (error) {
-        return {
-            error: "Internal Server Error",
-        };
     }
+    return {
+        message: 'Mentors import files were successfully processed',
+    };
+
 };
 
 const sendMentorsImpordedEvent = async(success: number, failed: number): Promise<void> => {

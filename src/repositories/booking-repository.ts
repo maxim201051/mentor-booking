@@ -2,7 +2,6 @@ import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand, ScanComma
 import { BookingEntity } from "../entities/booking-entity";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
-import { dynamodbUtils } from "../utils/dynamodb-utils";
 
 export class BookingRepository {
     private readonly dynamoDBClient: DynamoDBClient;
