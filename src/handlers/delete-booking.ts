@@ -70,7 +70,7 @@ export const handleDeleteBooking = async(event: any, dependencies: { mentorServi
             return {
               statusCode: 401,
               body: JSON.stringify({
-                error: 'auth is required in the query parameters',
+                error: 'auth header is required',
               }),
             };
         };

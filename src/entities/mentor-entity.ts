@@ -1,5 +1,5 @@
 import z from "zod";
-import { UserEntity, UserSchema } from "./user-entity";
+import { UserSchema } from "./user-entity";
 
 export const MentorSchema = UserSchema.extend({
     skills: z.array(z.string()).nonempty("skills is required"),
