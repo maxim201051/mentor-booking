@@ -1,0 +1,29 @@
+name: Run Tests
+
+on:
+  # Triggers the workflow on push or pull request
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # Use Ubuntu as the runner
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3 # Fetch the code from the repository
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v3 # Set up Node.js
+        with:
+          node-version: '16' # Specify Node.js version, replace with your version if different
+
+      - name: Install Dependencies
+        run: npm install # Install dependencies using npm
+
+      - name: Run Tests
+        run: npm test # Run the test suite
