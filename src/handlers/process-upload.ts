@@ -29,16 +29,16 @@ const sqsClient = new SQSClient({
 });
 
 export const main = async (event: any) => {
-    return await handleProcessUpload(event, { mentorService });
+    return await handleProcessUpload(event, { mentorService, uploadService, sqsClient });
 }
 
-export const handleProcessUpload = async (event: any, dependencies: { mentorService: any; }) => {
+export const handleProcessUpload = async (event: any, dependencies: { mentorService: any; uploadService: UploadService; sqsClient: SQSClient }) => {
     console.log("Processing upload")
     for (const record of event.Records) {
         try {
             const fileKey = record.s3.object.key;
             console.log(fileKey)
-            const s3Stream = await uploadService.getMentorsImport(fileKey) as Readable;
+            const s3Stream = await dependencies.uploadService.getMentorsImport(fileKey) as Readable;
             if(!s3Stream) {
                 console.error(`File not found ${fileKey}`)
                 continue;
@@ -66,7 +66,7 @@ export const handleProcessUpload = async (event: any, dependencies: { mentorServ
                 .on("end", resolve)
                 .on("error", reject);
             });
-            await sendMentorsImpordedEvent(createdMentors.length, failed);
+            await sendMentorsImpordedEvent(createdMentors.length, failed, dependencies.sqsClient);
         } catch (error) {
             console.error(error);
             throw error;
@@ -78,7 +78,7 @@ export const handleProcessUpload = async (event: any, dependencies: { mentorServ
 
 };
 
-const sendMentorsImpordedEvent = async(success: number, failed: number): Promise<void> => {
+const sendMentorsImpordedEvent = async(success: number, failed: number, sqsClient: SQSClient): Promise<void> => {
     const mentorsImporderEventBody = {
         type: "mentors.imported", 
         total: success + failed, 

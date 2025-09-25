@@ -26,7 +26,7 @@ export const main = async (event: any) => {
     return await handleGetTimeslotsByMentor(event, { mentorService, timeSlotService })
 }
 
-const handleGetTimeslotsByMentor = async (event: any, dependencies: { mentorService: MentorService; timeSlotService: TimeSlotService; }) => {
+export const handleGetTimeslotsByMentor = async (event: any, dependencies: { mentorService: MentorService; timeSlotService: TimeSlotService; }) => {
     try {
         const mentorId = event.pathParameters?.mentorId;
         if(!mentorId) {

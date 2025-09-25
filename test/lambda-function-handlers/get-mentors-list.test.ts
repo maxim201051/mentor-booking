@@ -1,83 +1,87 @@
-import { main } from "../../src/handlers/get-mentors-list";
 import { MentorService } from "../../src/services/mentor-service";
+import { MentorEntity } from "../../src/entities/mentor-entity";
+import { handleGetMentorsList } from "../../src/handlers/get-mentors-list";
 
-jest.mock("../../lib/mentor-booking-service/services/mentor-service");
+describe("handleGetMentorsList Tests", () => {
+    let mockMentorService: jest.Mocked<MentorService>;
 
-describe("get-mentors-list handler", () => {
-  let mockQueryMentorsWithFilters: jest.Mock;
+    beforeEach(() => {
+        mockMentorService = {
+            queryMentorsWithFilters: jest.fn(), 
+        } as unknown as jest.Mocked<MentorService>;
+    });
 
-  beforeEach(() => {
-    mockQueryMentorsWithFilters = jest.fn();
-    (MentorService as jest.Mock).mockImplementation(() => ({
-      queryMentorsWithFilters: mockQueryMentorsWithFilters,
-    }));
-  });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-  test("should return mentors when query parameters are empty", async () => {
-    mockQueryMentorsWithFilters.mockResolvedValue([
-      {
-        id: "mentor-1",
-        fullName: "John Doe",
-        email: "john.doe@example.com",
-        skills: ["JavaScript"],
-        experience: 5,
-      },
-    ]);
-
-    const response = await main({ queryStringParameters: {} });
-
-    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({}); 
-    expect(response).toEqual({
-      statusCode: 200,
-      body: JSON.stringify([
+    const mentors: MentorEntity[] = [
         {
-          id: "mentor-1",
-          fullName: "John Doe",
-          email: "john.doe@example.com",
-          skills: ["JavaScript"],
-          experience: 5,
+            id: "mentor-1",
+            email: "mentor@example.com",
+            fullName: "John Mentor",
+            skills: ["JavaScript", "AWS"],
+            experience: 5,
         },
-      ]),
-    });
-  });
-
-  test("should return mentors with filters", async () => {
-    mockQueryMentorsWithFilters.mockResolvedValue([
-      {
-        id: "mentor-2",
-        fullName: "Jane Smith",
-        email: "jane.smith@example.com",
-        skills: ["Python"],
-        experience: 7,
-      },
-    ]);
-
-    const response = await main({ queryStringParameters: { fullName: "Jane", experience: "7" } });
-
-    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({ fullName: "Jane", experience: "7" }); 
-    expect(response).toEqual({
-      statusCode: 200,
-      body: JSON.stringify([
         {
-          id: "mentor-2",
-          fullName: "Jane Smith",
-          email: "jane.smith@example.com",
-          skills: ["Python"],
-          experience: 7,
+            id: "mentor-2",
+            email: "jane.smith@example.com",
+            fullName: "Jane Smith",
+            skills: ["Python", "Machine Learning"],
+            experience: 8,
         },
-      ]),
+    ];
+
+    test("handleGetMentorsList should retrieve all mentors without query parameters", async () => {
+        mockMentorService.queryMentorsWithFilters.mockResolvedValueOnce(mentors);
+
+        const eventWithoutQueryParams = { queryStringParameters: {} };
+
+        const result = await handleGetMentorsList(eventWithoutQueryParams, {
+            mentorService: mockMentorService,
+        });
+
+        expect(result).toEqual({
+            statusCode: 200,
+            body: JSON.stringify(mentors),
+        });
+
+        expect(mockMentorService.queryMentorsWithFilters).toHaveBeenCalledWith({});
     });
-  });
 
-  test("should handle errors", async () => {
-    mockQueryMentorsWithFilters.mockRejectedValue(new Error("Error"));
+    test("handleGetMentorsList should retrieve filtered mentors based on query parameters", async () => {
+        mockMentorService.queryMentorsWithFilters.mockResolvedValueOnce([mentors[1]]);
 
-    const response = await main({ queryStringParameters: {} });
+        const eventWithQueryParams = { queryStringParameters: { skills: "Machine Learning" } };
 
-    expect(mockQueryMentorsWithFilters).toHaveBeenCalledWith({}); 
-    expect(response).toEqual({
-      statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error" }),
+        const result = await handleGetMentorsList(eventWithQueryParams, {
+            mentorService: mockMentorService,
+        });
+
+        expect(result).toEqual({
+            statusCode: 200,
+            body: JSON.stringify([mentors[1]]),
+        });
+
+        expect(mockMentorService.queryMentorsWithFilters).toHaveBeenCalledWith({
+            skills: "Machine Learning",
+        });
     });
-  });
+
+    test("handleGetMentorsList should return 500 for unexpected errors", async () => {
+        mockMentorService.queryMentorsWithFilters.mockRejectedValueOnce(new Error("Unexpected error"));
+
+        const eventWithoutQueryParams = { queryStringParameters: {} };
+
+        const result = await handleGetMentorsList(eventWithoutQueryParams, {
+            mentorService: mockMentorService,
+        });
+
+        expect(result).toEqual({
+            statusCode: 500,
+            body: JSON.stringify({ error: "Internal Server Error" }),
+        });
+
+        expect(mockMentorService.queryMentorsWithFilters).toHaveBeenCalledWith({});
+    });
 });

@@ -50,6 +50,7 @@ export const handleUpdateTimeslot = async(event: any, dependencies: { timeSlotSe
         }
         const body = JSON.parse(event.body);
         body.id = timeslotId;
+        body.mentorId = mentorId;
         const timeSlot: TimeSlotEntity = TimeSlotSchema.parse(body);
         if(timeSlot.startDate <= new Date()) {
             return {
@@ -59,7 +60,7 @@ export const handleUpdateTimeslot = async(event: any, dependencies: { timeSlotSe
                 }),
             };
         }
-        const overlappintTimeslots: TimeSlotEntity[] = await timeSlotService.getOverlappingTimeSlotsByMentor(mentorId, timeSlot.startDate, timeSlot.endDate);
+        const overlappintTimeslots: TimeSlotEntity[] = await dependencies.timeSlotService.getOverlappingTimeSlotsByMentor(mentorId, timeSlot.startDate, timeSlot.endDate);
         if(overlappintTimeslots.length > 0) {
             return {
                 statusCode: 400,

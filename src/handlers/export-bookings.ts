@@ -39,10 +39,10 @@ const sqsClient = new SQSClient({
 });
 
 export const main = async (event: any) => {
-    return await handleExportBookings(event, { bookingService, uploadService });    
+    return await handleExportBookings(event, { bookingService, uploadService, sqsClient });    
 }
 
-export const handleExportBookings = async (event: any, dependencies: { bookingService: BookingService; uploadService: UploadService; }) => {
+export const handleExportBookings = async (event: any, dependencies: { bookingService: BookingService; uploadService: UploadService; sqsClient: SQSClient}) => {
     for (const record of event.Records) {
         try {
             const bookingExportEvent = JSON.parse(record.body);
@@ -56,10 +56,10 @@ export const handleExportBookings = async (event: any, dependencies: { bookingSe
             console.log(bookings);
             const downloadUrl = await dependencies.uploadService.uploadBookingsExport(bookings);
 
-            await sendBookingsExportedEvent(true, bookings, downloadUrl);  
+            await sendBookingsExportedEvent(true, bookings, downloadUrl, dependencies.sqsClient);  
         } catch (error) {
             console.error(error);
-            await sendBookingsExportedEvent(false, [], "");
+            await sendBookingsExportedEvent(false, [], "", dependencies.sqsClient);
             throw error;
         }
     }
@@ -68,7 +68,7 @@ export const handleExportBookings = async (event: any, dependencies: { bookingSe
     };
 }
 
-const sendBookingsExportedEvent = async(success: boolean, bookings: BookingEntity[], downloadUrl: string): Promise<void> => {
+const sendBookingsExportedEvent = async(success: boolean, bookings: BookingEntity[], downloadUrl: string, sqsClient: SQSClient): Promise<void> => {
     const bookingsExportedEvent = {
         type: "bookings.exported",
         exportStatus: success? "success" : "failed",
