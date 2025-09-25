@@ -1,88 +1,126 @@
-import { main } from "../../src/handlers/get-timeslots-by-mentor";
 import { MentorService } from "../../src/services/mentor-service";
 import { TimeSlotService } from "../../src/services/timeslot-service";
+import { TimeSlotEntity } from "../../src/entities/timeslot-entity";
+import { MentorEntity } from "../../src/entities/mentor-entity";
+import { handleGetTimeslotsByMentor } from "../../src/handlers/get-timeslots-by-mentor";
 
-jest.mock("../../lib/mentor-booking-service/services/mentor-service");
-jest.mock("../../lib/mentor-booking-service/services/timeslot-service");
-
-describe("get-timeslots-by-mentor handler", () => {
-    let mockIsMentorExist: jest.Mock;
-    let mockGetTimeslotsByMentor: jest.Mock;
+describe("handleGetTimeslotsByMentor Tests", () => {
+    let mockMentorService: jest.Mocked<MentorService>;
+    let mockTimeSlotService: jest.Mocked<TimeSlotService>;
 
     beforeEach(() => {
-        mockIsMentorExist = jest.fn();
-        (MentorService as jest.Mock).mockImplementation(() => ({
-        isMentorExist: mockIsMentorExist,
-        }));
+        mockMentorService = {
+            getMentorById: jest.fn(), 
+        } as unknown as jest.Mocked<MentorService>;
 
-        mockGetTimeslotsByMentor = jest.fn();
-        (TimeSlotService as jest.Mock).mockImplementation(() => ({
-        getTimeslotsByMentor: mockGetTimeslotsByMentor,
-        }));
+        mockTimeSlotService = {
+            getTimeslotsByMentor: jest.fn(),
+        } as unknown as jest.Mocked<TimeSlotService>;
     });
 
-    test("should return 400 if mentorId is missing", async () => {
-        const response = await main({ pathParameters: {} });
-        expect(response).toEqual({
-        statusCode: 400,
-        body: JSON.stringify({ error: "mentorId is required in the path parameters" }),
-        });
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
-    test("should return 400 if mentor does not exist", async () => {
-        mockIsMentorExist.mockResolvedValue(false);
+    const mentor: MentorEntity = {
+        id: "mentor-1",
+        email: "mentor@example.com",
+        fullName: "John Mentor",
+        skills: ["JavaScript", "AWS"],
+        experience: 5,
+    };
 
-        const response = await main(
-            { pathParameters: { mentorId: "mentor-1" } },
-        );
-
-        expect(response).toEqual({
-        statusCode: 400,
-        body: JSON.stringify({ error: "Mentor with such id does not exist" }),
-        });
-    });
-
-    test("should return time slots for mentor", async () => {
-        mockIsMentorExist.mockResolvedValue(true);
-
-        mockGetTimeslotsByMentor.mockResolvedValue([
+    const timeSlots: TimeSlotEntity[] = [
         {
             id: "timeslot-1",
             mentorId: "mentor-1",
-            startDate: new Date("2023-10-01T10:00:00.000Z"),
-            endDate: new Date("2023-10-01T11:00:00.000Z"),
+            startDate: new Date("2023-12-01T10:00:00Z"),
+            endDate: new Date("2023-12-01T11:00:00Z"),
             isBooked: false,
         },
-        ]);
-
-        const response = await main(
-            { pathParameters: { mentorId: "mentor-1" } },
-        );
-
-        expect(response).toEqual({
-        statusCode: 200,
-        body: JSON.stringify([
-            {
-            id: "timeslot-1",
+        {
+            id: "timeslot-2",
             mentorId: "mentor-1",
-            startDate: new Date("2023-10-01T10:00:00.000Z"),
-            endDate: new Date("2023-10-01T11:00:00.000Z"),
-            isBooked: false,
-            },
-        ]),
+            startDate: new Date("2023-12-02T10:00:00Z"),
+            endDate: new Date("2023-12-02T11:00:00Z"),
+            isBooked: true,
+        },
+    ];
+
+    const eventWithValidMentorId = {
+        pathParameters: { mentorId: "mentor-1" },
+    };
+
+    test("handleGetTimeslotsByMentor should retrieve timeslots for a valid mentor", async () => {
+        mockMentorService.getMentorById.mockResolvedValueOnce(mentor);
+        mockTimeSlotService.getTimeslotsByMentor.mockResolvedValueOnce(timeSlots);
+
+        const result = await handleGetTimeslotsByMentor(eventWithValidMentorId, {
+            mentorService: mockMentorService,
+            timeSlotService: mockTimeSlotService,
         });
+
+        expect(result).toEqual({
+            statusCode: 200,
+            body: JSON.stringify(timeSlots),
+        });
+
+        expect(mockMentorService.getMentorById).toHaveBeenCalledWith("mentor-1");
+        expect(mockTimeSlotService.getTimeslotsByMentor).toHaveBeenCalledWith("mentor-1");
     });
 
-    test("should handle errors", async () => {
-        mockIsMentorExist.mockRejectedValue(new Error("Error"));
+    test("handleGetTimeslotsByMentor should return error if 'mentorId' is missing", async () => {
+        const event = { pathParameters: null };
 
-        const response = await main(
-            { pathParameters: { mentorId: "mentor-1" } },
-        );
-
-        expect(response).toEqual({
-        statusCode: 500,
-        body: JSON.stringify({ error: "Internal Server Error" }),
+        const result = await handleGetTimeslotsByMentor(event, {
+            mentorService: mockMentorService,
+            timeSlotService: mockTimeSlotService,
         });
+
+        expect(result).toEqual({
+            statusCode: 400,
+            body: JSON.stringify({
+                error: "mentorId is required in the path parameters",
+            }),
+        });
+
+        expect(mockMentorService.getMentorById).not.toHaveBeenCalled();
+        expect(mockTimeSlotService.getTimeslotsByMentor).not.toHaveBeenCalled();
+    });
+
+    test("handleGetTimeslotsByMentor should return error if mentor does not exist", async () => {
+        mockMentorService.getMentorById.mockResolvedValueOnce(null);
+
+        const result = await handleGetTimeslotsByMentor(eventWithValidMentorId, {
+            mentorService: mockMentorService,
+            timeSlotService: mockTimeSlotService,
+        });
+
+        expect(result).toEqual({
+            statusCode: 400,
+            body: JSON.stringify({
+                error: "Mentor with such id does not exits",
+            }),
+        });
+
+        expect(mockMentorService.getMentorById).toHaveBeenCalledWith("mentor-1");
+        expect(mockTimeSlotService.getTimeslotsByMentor).not.toHaveBeenCalled();
+    });
+
+    test("handleGetTimeslotsByMentor should return 500 for unexpected errors", async () => {
+        mockMentorService.getMentorById.mockRejectedValueOnce(new Error("Unexpected error"));
+
+        const result = await handleGetTimeslotsByMentor(eventWithValidMentorId, {
+            mentorService: mockMentorService,
+            timeSlotService: mockTimeSlotService,
+        });
+
+        expect(result).toEqual({
+            statusCode: 500,
+            body: JSON.stringify({ error: "Internal Server Error" }),
+        });
+
+        expect(mockMentorService.getMentorById).toHaveBeenCalledWith("mentor-1");
+        expect(mockTimeSlotService.getTimeslotsByMentor).not.toHaveBeenCalled();
     });
 });

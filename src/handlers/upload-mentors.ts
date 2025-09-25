@@ -17,7 +17,7 @@ export const handleUploadMentors = async (event: any, dependencies: { uploadServ
         const multipartFormDataBoundary = extractBoundary(event);
         const multipartFormDataBody = event.body;
         
-        await uploadService.uploadMentorsImport(multipartFormDataBody, multipartFormDataBoundary);
+        await dependencies.uploadService.uploadMentorsImport(multipartFormDataBody, multipartFormDataBoundary);
 
         return {
             statusCode: 200,
